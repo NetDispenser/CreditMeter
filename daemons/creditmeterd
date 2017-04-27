@@ -1,0 +1,40 @@
+#!/usr/bin/python3
+import os,sys,json,logging
+from xmlrpc.server import SimpleXMLRPCServer
+from daemon import Daemon
+
+CREDITMETER_PID='/var/run/creditmeter.pid'
+CREDITMETER_HOSTNAME="192.168.22.1"
+
+FORMAT = 'RLOGD: %(message)s'
+CREDITMETER_FULL_PATH='/var/www/meter/creditmeter/meter.log'
+logging.basicConfig(filename=CREDITMETER_FULL_PATH,level=logging.DEBUG, format=FORMAT)
+
+class CreditMeterDaemon(Daemon):
+
+	def __init__(self,pidfile):
+		Daemon.__init__(self,pidfile)
+		logging.debug("creditmeterd.init")
+
+	def transfer_remote_balance(self,*args):
+		logging.debug("transfer_remote_balance")
+		username=args[0]
+		remote_username=args[1]
+		remote_password=args[2]
+		
+		return 1234
+
+	def run(self):
+		logging.debug("run")
+		#self.RUNNING=False
+		self.server=SimpleXMLRPCServer((CREDITMETER_HOSTNAME,8210))
+		self.server.register_introspection_functions()
+		self.server.register_instance(self)
+		self.server.serve_forever()
+
+
+if __name__=="__main__":
+	daemon=CreditMeterDaemon(CREDITMETER_PID)
+	if len(sys.argv)==2:
+		if 'start'==sys.argv[1]:daemon.start()
+		elif 'stop'==sys.argv[1]:daemon.stop()

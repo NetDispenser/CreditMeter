@@ -1,0 +1,89 @@
+<html>
+<style>
+fieldset{width:0%;padding:100px 100px;}
+</style>
+<head>
+<title>{{title}}</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+<script>
+var print=function(msg){console.log(msg);}
+
+$(document).ready(function(){
+	$("#update_remote_balance_form").submit(function(e){
+		console.log(e);
+		$.ajax({
+			type: "POST",
+			url: "/meter",
+			data: $("#update_remote_balance_form").serialize(),
+			success: function(rval){
+				var pyld=JSON.parse(rval);
+				$("#remote_balance_div").html(pyld['remote_balance']);
+			}
+		});
+		e.preventDefault();
+	});//submit
+	$("#transfer_remote_balance_form").submit(function(e){
+		console.log(e);
+		$.ajax({
+			type: "POST",
+			url: "/meter",
+			data: $("#transfer_remote_balance_form").serialize(),
+			success: function(rval){
+				var pyld=JSON.parse(rval);
+				$("#local_balance_div").html(pyld['local_balance']);
+				$("#remote_balance_div").html(pyld['remote_balance']);
+				$("#transfer_amount_div").html(pyld['transfer_amount']);
+			}
+		});
+		e.preventDefault();
+	});//submit
+});//ready
+
+var updateCB=function(){
+	print('updateCB');
+	var pval={'action':'update_remote_balance',};
+	$('#pyld').val(JSON.stringify(pval));
+	$("#update_remote_balance_form").submit();
+}
+var transferCB=function(){
+	print('transferCB');
+	var pval={'action':'transfer_remote_balance',};
+	$('#rpyld').val(JSON.stringify(pval));
+	$("#transfer_remote_balance_form").submit();
+}
+
+</script>
+</head>
+<body>
+
+<fieldset>
+	<legend>Local Account</legend>
+	is_parent: {{is_parent}}<br>
+	<table><tr>
+	<td><div>credit_balance: <div></td><td><div id="local_balance_div"> {{credit_balance}} </div></td>
+	</tr></table>
+</fieldset>
+
+<fieldset>
+	<legend>Remote Account</legend>
+	<table><tr>
+	<td><div>credit_balance: <div></td><td><div id="remote_balance_div"> 000 </div></td>
+	</tr><tr>
+	<td><div>transfer_amount: <div></td><td><div id="transfer_amount_div"> 000 </div></td>
+	</tr></table>
+</fieldset>
+
+<form action="" method="POST" id="update_remote_balance_form">
+	{%csrf_token%}
+	<input type="hidden" id="pyld" name="pyld" value=""></input>
+</form>
+<form action="" method="POST" id="transfer_remote_balance_form">
+	{%csrf_token%}
+	<input type="hidden" id="rpyld" name="pyld" value=""></input>
+</form>
+
+<button onclick="updateCB()">Update Remote Balance</button>
+<button onclick="transferCB()">Transfer Remote Balance</button>
+
+</body>
+</html>
