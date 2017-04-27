@@ -51,10 +51,16 @@ var transferCB=function(){
 	$('#rpyld').val(JSON.stringify(pval));
 	$("#transfer_remote_balance_form").submit();
 }
-
+var logoutCB=function(){
+	window.location="/meter/logout";
+}
 </script>
 </head>
 <body>
+
+<h3>Welcome {{username}}!</h3>
+<h3>Remote Username: {{remote_username}}</h3>
+<h3>Remote Password: {{remote_password}}</h3>
 
 <fieldset>
 	<legend>Local Account</legend>
@@ -84,6 +90,8 @@ var transferCB=function(){
 
 <button onclick="updateCB()">Update Remote Balance</button>
 <button onclick="transferCB()">Transfer Remote Balance</button>
+<br>
+<button onclick="logoutCB()">Logout</button>
 
 </body>
 </html>

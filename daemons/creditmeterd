@@ -6,9 +6,9 @@ from daemon import Daemon
 CREDITMETER_PID='/var/run/creditmeter.pid'
 CREDITMETER_HOSTNAME="192.168.22.1"
 
-FORMAT = 'RLOGD: %(message)s'
-CREDITMETER_FULL_PATH='/var/www/meter/creditmeter/meter.log'
-logging.basicConfig(filename=CREDITMETER_FULL_PATH,level=logging.DEBUG, format=FORMAT)
+FORMAT = 'CREDITMETERD: %(message)s'
+CREDITMETER_LOG_FULL_PATH='/var/www/meter/creditmeter/meter.log'
+logging.basicConfig(filename=CREDITMETER_LOG_FULL_PATH,level=logging.DEBUG, format=FORMAT)
 
 class CreditMeterDaemon(Daemon):
 
@@ -21,7 +21,7 @@ class CreditMeterDaemon(Daemon):
 		username=args[0]
 		remote_username=args[1]
 		remote_password=args[2]
-		
+
 		return 1234
 
 	def run(self):

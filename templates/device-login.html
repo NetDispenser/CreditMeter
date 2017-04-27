@@ -1,0 +1,62 @@
+<html>
+<head>
+<title>{{title}}</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="/static/creditmeter/css/login.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+
+<script>
+var decode=function(str){
+	var div = document.createElement('div');
+	div.innerHTML = str;
+	var decoded=str;
+	try{
+		decoded = div.firstChild.nodeValue;
+	}
+	catch(e){;}
+	return decoded;
+}
+$(document).ready(function(){
+	$("#device_div").html("{{device_name}}");
+	var pyld={"device_name":"{{device_name}}","device_ip":"{{device_ip}}","device_mac":"{{device_mac}}"};
+	$("#pyld").val(JSON.stringify(pyld));//prepares for submit
+});
+</script>
+</head>
+
+<body>
+<div id="modal" class="modal" style="display:block;">
+	<form class="modal-content animate" action="/meter" method="POST" style="max-width:400px;">
+		{% csrf_token %}
+		<div class="imgcontainer">
+			<span onclick="document.getElementById('modal').style.display='none'" class="close" title="Close Modal">&times;</span>
+			<i><h2>Credit Meter Welcome</h2></i>
+		</div>
+
+		<div class="container">
+			<table align="center">
+			<tr><td>
+			<label><b>Device Name:</b></label>
+			</td><td>
+			<div id="device_div"></div>
+			</td></tr>
+			</table>
+			<button type="submit">Enter</button>
+		</div>
+		<input type="hidden" id="pyld" name="pyld" value=""></input>
+	</form>
+</div>
+
+<script>
+
+var modal = document.getElementById('modal');
+
+window.onclick = function(event) {
+		if (event.target == modal) {
+			modal.style.display = "none";
+		}
+}
+</script>
+</body>
+</html>
