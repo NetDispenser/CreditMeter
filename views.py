@@ -12,11 +12,12 @@ import os,logging,time,json,sys,urllib.request,random
 import xmlrpc.client
 
 FORMAT = 'VIEW: %(message)s'
-
-CREDITMETER_LOG_FULL_PATH='./meter.log'
 logging.basicConfig(filename=CREDITMETER_LOG_FULL_PATH,level=logging.DEBUG, format=FORMAT)
 mylogger = logging.getLogger('django')
 
+server_str="http://%s:%d"%(CREDITMETER_HOSTNAME,CREDITMETERD_PORT)
+#s=xmlrpc.client.Server(server_str)
+#s=xmlrpc.client.Server("http://192.168.22.1:8011")
 def logout_view(request):
     logging.debug("logout_view")
     empty_session_id=logout(request)
@@ -27,8 +28,15 @@ def logout_view(request):
 def keepalive(request):
 	ip=request.META.get('HTTP_X_FORWARDED_FOR') or request.META.get('REMOTE_ADDR')
 	mylogger.debug("keepalive "+ip)
-	#mylogger.debug('old '+request.POST['old'])
-	return HttpResponse(int(random.random()*5000.))
+	mylogger.debug(server_str)
+	s=xmlrpc.client.Server(server_str)
+	mylogger.debug("calling ...")
+	dt=s.keepalive(request.user.username,request.user.userprofile.mac_addrs)
+	mylogger.debug("ahh :)")
+	request.user.userprofile.credit_balance-=dt
+	request.user.userprofile.save()
+
+	return HttpResponse(request.user.userprofile.credit_balance)
 
 def home(request):
 	mylogger.debug("home");
@@ -36,8 +44,11 @@ def home(request):
 		mylogger.debug("already authenticated:"+request.user.username)
 		return app(request)
 
-	ip=request.META.get('HTTP_X_FORWARDED_FOR') or request.META.get('REMOTE_ADDR')
-	mylogger.debug("not authenticated: %s"%(ip))
+	IP=request.META.get('HTTP_X_FORWARDED_FOR') or request.META.get('REMOTE_ADDR')
+	mylogger.debug("not authenticated: %s"%(IP))
+	device_options=mkDeviceOptions()
+	opt=device_options[IP]
+
 	if request.method == 'POST':
 		mylogger.debug("getting login_pyld from post ...")
 		mylogger.debug(request.POST["login_pyld"])
@@ -54,16 +65,15 @@ def home(request):
 			acct.userprofile.is_parent=False
 			acct.userprofile.remote_username="guest"
 			acct.userprofile.remote_password="pycon2017"
+			acct.userprofile.mac_addrs.append(opt['device_mac'])#initialize with mac of device being used to create account
 			acct.userprofile.save()
 			acct.save()
+
 			mylogger.debug("logging-in ...")
 			login(request,acct)
 			return app(request)
 
 	mylogger.debug("home, not a post")
-	device_options=mkDeviceOptions()
-	IP=request.META.get('HTTP_X_FORWARDED_FOR') or request.META.get('REMOTE_ADDR')
-	opt=device_options[IP]
 	context={
 		'title':'Credit Meter Login',
 		'button_text':'Login',
@@ -83,7 +93,7 @@ def home(request):
 @login_required
 def get(request):#remote balance query and xfer @here, plus others.
 	rval=-999
-	credit_feeder_url="http://feeder.asymptopia.org/"
+
 	try:
 		qs=request.META['QUERY_STRING']
 
@@ -91,13 +101,13 @@ def get(request):#remote balance query and xfer @here, plus others.
 			rval=request.user.userprofile.credit_balance
 
 		elif qs=='remote_balance':
-			url='%sget?request=update&username=%s&password=%s'%(credit_feeder_url,request.user.userprofile.remote_username,request.user.userprofile.remote_password)
+			url='%sget?request=update&username=%s&password=%s'%(CREDIT_FEEDER_URL,request.user.userprofile.remote_username,request.user.userprofile.remote_password)
 			with urllib.request.urlopen(url) as response:
 				remote_balance = int(response.read())
 			rval=remote_balance
 
 		elif qs=='transfer_balance':
-			url='%sget?request=transfer&username=%s&password=%s'%(credit_feeder_url,request.user.userprofile.remote_username,request.user.userprofile.remote_password)
+			url='%sget?request=transfer&username=%s&password=%s'%(CREDIT_FEEDER_URL,request.user.userprofile.remote_username,request.user.userprofile.remote_password)
 			mylogger.debug(url)
 			with urllib.request.urlopen(url) as response:
 				transfer_amount=int(response.read())

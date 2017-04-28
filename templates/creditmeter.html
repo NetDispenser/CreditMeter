@@ -40,18 +40,24 @@ var rxOff=function(){
 	}
 	$("#WAIT").toggleClass("orange");
 }
+var txOff=function(){
+	console.log("txOff")
+	if($("#TX").hasClass("red")){
+		$("#TX").toggleClass("red")//off
+	}
+}
 var runCB=function(){
 	print("runCB")
 	if($("#WAIT").hasClass("orange")){$("#WAIT").toggleClass("orange")}
 	if($("#RX").hasClass("green")){$("#RX").toggleClass("green")}
 	$("#TX").toggleClass("red");
+	window.setTimeout(txOff,1000);
 	$.ajax({
 		type: "GET",
 		url: "/keepalive",
 		success: function(rval){
 			try{
 			console.log(rval);
-			$("#TX").toggleClass("red");//off
 			$("#RX").toggleClass("green");//on
 			$("#local_balance_div").html(rval);//rval=raw integer
 			window.setTimeout(rxOff,1000);
@@ -79,7 +85,7 @@ var updateSomething=function(what,where){
 <h3>Welcome {{username}}!</h3>
 <h3>Remote Username: {{remote_username}}</h3>
 <h3>Remote Password: {{remote_password}}</h3>
-<button onclick="logoutCB()">Logout</button>
+<button style="font-size:24px" onclick="logoutCB()">Logout</button>
 
 <fieldset>
 	<legend>Access Control</legend>
@@ -87,24 +93,25 @@ var updateSomething=function(what,where){
 	<td><div id="TX" class="led"></div></td>
 	<td><div id="RX" class="led"></div></td>
 	<td><div id="WAIT" class="led"></div></td>
+	<td><button onclick="runCB()"><i style="font-size:24px" class="fa">&#xf2b5;</i></button></td>
 	</tr></table>
-	<button onclick="runCB()">Run</button>
+
 </fieldset>
 
 <fieldset>
 	<legend>Local Account</legend>
 	is_parent: {{is_parent}}<br>
 	<table><tr>
-	<td><div>credit_balance: <div></td><td><div id="local_balance_div"> {{credit_balance}} </div></td><td><button onclick="localCB()"><i style="font-size:18px" class="fa">&#xf021;</i></button></td>
+	<td><div>credit_balance: <div></td><td><div id="local_balance_div"> {{credit_balance}} </div></td><td><button onclick="localCB()"><i style="font-size:24px" class="fa">&#xf021;</i></button></td>
 	</tr></table>
 </fieldset>
 
 <fieldset>
 	<legend>Remote Account</legend>
 	<table><tr>
-	<td><div>credit_balance: <div></td><td><div id="remote_balance_div"> 000 </div></td><td><button onclick="updateCB()"><i style="font-size:18px" class="fa">&#xf021;</i></button></td>
+	<td><div>credit_balance: <div></td><td><div id="remote_balance_div"> 000 </div></td><td><button onclick="updateCB()"><i style="font-size:24px" class="fa">&#xf021;</i></button></td>
 	</tr><tr>
-	<td><div>transfer_amount: <div></td><td><div id="transfer_balance_div"> 000 </div></td><td><button onclick="transferCB()"><i style="font-size:18px" class="fa">&#xf021;</i></button></td>
+	<td><div>transfer_amount: <div></td><td><div id="transfer_balance_div"> 000 </div></td><td><button onclick="transferCB()"><i style="font-size:24px" class="fa">&#xf021;</i></button></td>
 	</tr></table>
 </fieldset>
 
