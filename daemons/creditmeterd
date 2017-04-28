@@ -16,14 +16,6 @@ class CreditMeterDaemon(Daemon):
 		Daemon.__init__(self,pidfile)
 		logging.debug("creditmeterd.init")
 
-	def transfer_remote_balance(self,*args):
-		logging.debug("transfer_remote_balance")
-		username=args[0]
-		remote_username=args[1]
-		remote_password=args[2]
-
-		return 1234
-
 	def run(self):
 		logging.debug("run")
 		#self.RUNNING=False

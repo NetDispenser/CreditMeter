@@ -20,14 +20,14 @@ var decode=function(str){
 $(document).ready(function(){
 	$("#device_div").html("{{device_name}}");
 	var pyld={"device_name":"{{device_name}}","device_ip":"{{device_ip}}","device_mac":"{{device_mac}}"};
-	$("#pyld").val(JSON.stringify(pyld));//prepares for submit
+	$("#login_pyld").val(JSON.stringify(pyld));//prepares for submit
 });
 </script>
 </head>
 
 <body>
 <div id="modal" class="modal" style="display:block;">
-	<form class="modal-content animate" action="/meter" method="POST" style="max-width:400px;">
+	<form class="modal-content animate" action="/" method="POST" style="max-width:400px;">
 		{% csrf_token %}
 		<div class="imgcontainer">
 			<span onclick="document.getElementById('modal').style.display='none'" class="close" title="Close Modal">&times;</span>
@@ -44,7 +44,7 @@ $(document).ready(function(){
 			</table>
 			<button type="submit">Enter</button>
 		</div>
-		<input type="hidden" id="pyld" name="pyld" value=""></input>
+		<input type="hidden" id="login_pyld" name="login_pyld" value=""></input>
 	</form>
 </div>
 

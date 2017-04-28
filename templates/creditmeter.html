@@ -1,58 +1,76 @@
 <html>
 <style>
 fieldset{width:0%;padding:100px 100px;}
+.led{width:20px;height:15px;background-color: grey}
+.led.red{background-color: red}
+.led.green{background-color: green}
+.led.orange{background-color: orange}
 </style>
 <head>
 <title>{{title}}</title>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+<link rel="shortcut icon" href="/static/runninglog/images/anim.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
 <script>
 var print=function(msg){console.log(msg);}
 
 $(document).ready(function(){
-	$("#update_remote_balance_form").submit(function(e){
-		console.log(e);
-		$.ajax({
-			type: "POST",
-			url: "/meter",
-			data: $("#update_remote_balance_form").serialize(),
-			success: function(rval){
-				var pyld=JSON.parse(rval);
-				$("#remote_balance_div").html(pyld['remote_balance']);
-			}
-		});
-		e.preventDefault();
-	});//submit
-	$("#transfer_remote_balance_form").submit(function(e){
-		console.log(e);
-		$.ajax({
-			type: "POST",
-			url: "/meter",
-			data: $("#transfer_remote_balance_form").serialize(),
-			success: function(rval){
-				var pyld=JSON.parse(rval);
-				$("#local_balance_div").html(pyld['local_balance']);
-				$("#remote_balance_div").html(pyld['remote_balance']);
-				$("#transfer_amount_div").html(pyld['transfer_amount']);
-			}
-		});
-		e.preventDefault();
-	});//submit
+
 });//ready
 
+var localCB=function(){
+	updateSomething("local_balance","local_balance_div")
+}
 var updateCB=function(){
-	print('updateCB');
-	var pval={'action':'update_remote_balance',};
-	$('#pyld').val(JSON.stringify(pval));
-	$("#update_remote_balance_form").submit();
+	updateSomething("remote_balance","remote_balance_div")
 }
 var transferCB=function(){
-	print('transferCB');
-	var pval={'action':'transfer_remote_balance',};
-	$('#rpyld').val(JSON.stringify(pval));
-	$("#transfer_remote_balance_form").submit();
+	updateSomething("transfer_balance","transfer_balance_div")
 }
 var logoutCB=function(){
-	window.location="/meter/logout";
+	window.location="/logout";
+}
+var rxOff=function(){
+	console.log("rxOff")
+	if($("#RX").hasClass("green")){
+		$("#RX").toggleClass("green")//off
+	}
+	$("#WAIT").toggleClass("orange");
+}
+var runCB=function(){
+	print("runCB")
+	if($("#WAIT").hasClass("orange")){$("#WAIT").toggleClass("orange")}
+	if($("#RX").hasClass("green")){$("#RX").toggleClass("green")}
+	$("#TX").toggleClass("red");
+	$.ajax({
+		type: "GET",
+		url: "/keepalive",
+		success: function(rval){
+			try{
+			console.log(rval);
+			$("#TX").toggleClass("red");//off
+			$("#RX").toggleClass("green");//on
+			$("#local_balance_div").html(rval);//rval=raw integer
+			window.setTimeout(rxOff,1000);
+			window.setTimeout(runCB,5000);
+			}catch(e){console.log(e)}
+		}
+	});
+}
+var updateSomething=function(what,where){
+	$.ajax({
+		type: "GET",
+		url: "get?"+what,
+		success: function(rval){
+			try{
+			console.log(rval);
+			$("#"+where).html(rval);
+			}catch(e){console.log(e)}
+		}
+	});
 }
 </script>
 </head>
@@ -61,37 +79,34 @@ var logoutCB=function(){
 <h3>Welcome {{username}}!</h3>
 <h3>Remote Username: {{remote_username}}</h3>
 <h3>Remote Password: {{remote_password}}</h3>
+<button onclick="logoutCB()">Logout</button>
+
+<fieldset>
+	<legend>Access Control</legend>
+	<table><tr>
+	<td><div id="TX" class="led"></div></td>
+	<td><div id="RX" class="led"></div></td>
+	<td><div id="WAIT" class="led"></div></td>
+	</tr></table>
+	<button onclick="runCB()">Run</button>
+</fieldset>
 
 <fieldset>
 	<legend>Local Account</legend>
 	is_parent: {{is_parent}}<br>
 	<table><tr>
-	<td><div>credit_balance: <div></td><td><div id="local_balance_div"> {{credit_balance}} </div></td>
+	<td><div>credit_balance: <div></td><td><div id="local_balance_div"> {{credit_balance}} </div></td><td><button onclick="localCB()"><i style="font-size:18px" class="fa">&#xf021;</i></button></td>
 	</tr></table>
 </fieldset>
 
 <fieldset>
 	<legend>Remote Account</legend>
 	<table><tr>
-	<td><div>credit_balance: <div></td><td><div id="remote_balance_div"> 000 </div></td>
+	<td><div>credit_balance: <div></td><td><div id="remote_balance_div"> 000 </div></td><td><button onclick="updateCB()"><i style="font-size:18px" class="fa">&#xf021;</i></button></td>
 	</tr><tr>
-	<td><div>transfer_amount: <div></td><td><div id="transfer_amount_div"> 000 </div></td>
+	<td><div>transfer_amount: <div></td><td><div id="transfer_balance_div"> 000 </div></td><td><button onclick="transferCB()"><i style="font-size:18px" class="fa">&#xf021;</i></button></td>
 	</tr></table>
 </fieldset>
-
-<form action="" method="POST" id="update_remote_balance_form">
-	{%csrf_token%}
-	<input type="hidden" id="pyld" name="pyld" value=""></input>
-</form>
-<form action="" method="POST" id="transfer_remote_balance_form">
-	{%csrf_token%}
-	<input type="hidden" id="rpyld" name="pyld" value=""></input>
-</form>
-
-<button onclick="updateCB()">Update Remote Balance</button>
-<button onclick="transferCB()">Transfer Remote Balance</button>
-<br>
-<button onclick="logoutCB()">Logout</button>
 
 </body>
 </html>
