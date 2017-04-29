@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import os,sys,json,logging
+import os,sys,json,logging,threading,time
 from xmlrpc.server import SimpleXMLRPCServer
 from daemon import Daemon
 import utils
@@ -13,11 +13,76 @@ class CreditMeterDaemon(Daemon):
 	def __init__(self,pidfile):
 		Daemon.__init__(self,pidfile)
 		logging.debug("creditmeterd.init")
+		self.clients={}
+		self.t=None
+
+	def json_status_report(self):#to query from python shell
+		return json.dumps(self.clients)
+
+	def manage_firewall(self):
+		while True:
+			try:
+				for key in list(self.clients):
+					client=self.clients[key]
+					if client['running']:
+						logging.debug(client['mac']+' is running ...')
+						t_now=time.time()
+						dt=int(t_now-client['t_last'])
+						if dt>10:
+							client['running']=False
+							logging.debug("client: "+client['mac']+" running=False")
+						else:logging.debug(client['mac']+" is okay")
+				time.sleep(1)
+			except:
+				logging.exception("firewall checker exception")
+				time.sleep(1)
+
+	def add_client(self,mac):
+		self.clients[mac]={
+			't_instantiation':mktstamp(),
+			't_elapsed':0.,
+			't_elapsed_total':0.,
+			't_last':time.time(),
+			'running':True,
+			'mac':mac,
+		}
+		return 0
+
+	def update_client(self,mac):
+		t_now=time.time()
+		if not self.clients[mac]['running']:
+			self.clients[mac]['t_last']=t_now
+			self.clients[mac]['t_elapsed']=0
+		dt=int(t_now-self.clients[mac]['t_last'])
+		self.clients[mac]['t_elapsed']+=dt
+		self.clients[mac]['t_elapsed_total']+=dt
+		self.clients[mac]['t_last']=t_now
+		self.clients[mac]['running']=True
+		return dt
+
+	def start_thread(self):
+		if not self.t:
+			logging.debug("starting thread")
+			self.t = threading.Thread(target=self.manage_firewall)
+			self.t.daemon = True
+			self.t.start()
+			logging.debug("started.")
+
 
 	def keepalive(self,*args):
+		#this guy merely does as told, ie open/close iptables per mac addr.  if views tells
+		#this func to keepalive then we do it, ie views checks balances etc. thus ...
+		#also self.this runs a thread checking for timed-out connections to remove, notably
+		#independently of calls to keepalive.
+		if not self.t:self.start_thread()
 		username=args[0]
 		mac_addrs=args[1]
-		return 5
+		for mac in mac_addrs:
+			logging.debug(mac)
+			if not list(self.clients).count(mac):
+				self.add_client(mac)
+			rval=self.update_client(mac)#rval is dt which view to charge credit balance
+		return rval
 
 	def run(self):
 		logging.debug("run")
@@ -26,7 +91,6 @@ class CreditMeterDaemon(Daemon):
 		self.server.register_introspection_functions()
 		self.server.register_instance(self)
 		self.server.serve_forever()
-
 
 if __name__=="__main__":
 	daemon=CreditMeterDaemon(CREDITMETER_PID)

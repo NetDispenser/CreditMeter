@@ -1,10 +1,15 @@
-import time,os
+import time,os,datetime
 
 CREDITMETER_LOG_FULL_PATH='/var/www/meter/creditmeter/meter.log'
 CREDITMETERD_PORT=8210
 CREDIT_FEEDER_URL="http://feeder.asymptopia.org/"
 CREDITMETER_PID='/var/run/creditmeter.pid'
 CREDITMETER_HOSTNAME="192.168.22.1"
+
+def mktstamp():
+	tstamp="%s"%datetime.datetime.now()
+	truncated=tstamp.split(".")[0]
+	return  truncated
 
 def mkDeviceOptions():
 	opts={'keys':[],}

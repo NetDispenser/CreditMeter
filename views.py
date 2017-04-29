@@ -115,6 +115,11 @@ def get(request):#remote balance query and xfer @here, plus others.
 			request.user.userprofile.save()
 			rval=transfer_amount
 
+		elif qs=='json_status_report':
+			s=xmlrpc.client.Server(server_str)
+			mylogger.debug("calling daemon for status_report")
+			rval=s.json_status_report()
+
 	except:mylogger.exception("UhOh")
 	return HttpResponse(rval);
 

@@ -1,7 +1,7 @@
 <html>
 <style>
-fieldset{width:0%;padding:100px 100px;}
-.led{width:20px;height:15px;background-color: grey}
+fieldset{width:0%;padding:30px 30px;}
+.led{width:32px;height:24px;background-color: grey}
 .led.red{background-color: red}
 .led.green{background-color: green}
 .led.orange{background-color: orange}
@@ -11,7 +11,7 @@ fieldset{width:0%;padding:100px 100px;}
 <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
-<link rel="shortcut icon" href="/static/runninglog/images/anim.png">
+<link rel="shortcut icon" href="/static/creditmeter/images/anim.png">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
 <script>
@@ -29,6 +29,9 @@ var updateCB=function(){
 }
 var transferCB=function(){
 	updateSomething("transfer_balance","transfer_balance_div")
+}
+var statusCB=function(){
+	updateSomething("json_status_report","status_report_div")
 }
 var logoutCB=function(){
 	window.location="/logout";
@@ -83,9 +86,9 @@ var updateSomething=function(what,where){
 <body>
 
 <h3>Welcome {{username}}!</h3>
+<h3>is_parent: {{is_parent}}</h3>
 <h3>Remote Username: {{remote_username}}</h3>
 <h3>Remote Password: {{remote_password}}</h3>
-<button style="font-size:24px" onclick="logoutCB()">Logout</button>
 
 <fieldset>
 	<legend>Access Control</legend>
@@ -96,14 +99,10 @@ var updateSomething=function(what,where){
 	<td><button onclick="runCB()"><i style="font-size:24px" class="fa">&#xf2b5;</i></button></td>
 	</tr></table>
 
-</fieldset>
-
-<fieldset>
-	<legend>Local Account</legend>
-	is_parent: {{is_parent}}<br>
 	<table><tr>
 	<td><div>credit_balance: <div></td><td><div id="local_balance_div"> {{credit_balance}} </div></td><td><button onclick="localCB()"><i style="font-size:24px" class="fa">&#xf021;</i></button></td>
 	</tr></table>
+
 </fieldset>
 
 <fieldset>
@@ -114,6 +113,11 @@ var updateSomething=function(what,where){
 	<td><div>transfer_amount: <div></td><td><div id="transfer_balance_div"> 000 </div></td><td><button onclick="transferCB()"><i style="font-size:24px" class="fa">&#xf021;</i></button></td>
 	</tr></table>
 </fieldset>
+
+<button style="font-size:24px" onclick="logoutCB()">Logout</button>
+
+<button style="font-size:24px" onclick="statusCB()">Status</button>
+<div id="status_report_div"></div>
 
 </body>
 </html>
