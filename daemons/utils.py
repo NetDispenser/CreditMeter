@@ -6,6 +6,10 @@ CREDIT_FEEDER_URL="http://feeder.asymptopia.org/"
 CREDITMETER_PID='/var/run/creditmeter.pid'
 CREDITMETER_HOSTNAME="192.168.22.1"
 
+LAN0="eth0"
+LAN1="wlan1"
+WAN="wlan0"
+
 def mktstamp():
 	tstamp="%s"%datetime.datetime.now()
 	truncated=tstamp.split(".")[0]
@@ -39,46 +43,16 @@ def getAirOnly():
 	return air_only
 
 def getMACOnly(MAC):
+
 	mac_only=[
-		"iptables -A FORWARD  -m mac --mac-source %s -j ACCEPT"%(MAC)
+		"iptables -A FORWARD -i %s -m mac --mac-source %s -j ACCEPT"%(LAN0,MAC),
+		"iptables -A FORWARD -i %s -m mac --mac-source %s -j ACCEPT"%(LAN1,MAC),
+		"iptables -A FORWARD -i %s -m mac --mac-source %s -j ACCEPT"%(WAN,MAC),
 	]
 	return mac_only
 
-def getWideOpen():
-	LAN0="eth0"
-	LAN1="wlan1"
-	WAN="wlan0"
-	wide_open=[
-		"iptables -F",
-		"iptables -t nat -F",
-		"iptables -P INPUT ACCEPT",
-		"iptables -P OUTPUT ACCEPT",
-		"iptables -P FORWARD ACCEPT",
-		"iptables -I INPUT 1 -i %s -j ACCEPT"%(LAN0),
-		"iptables -I INPUT 1 -i %s -j ACCEPT"%(LAN1),
-		"iptables -I INPUT 1 -i lo -j ACCEPT",
-		"iptables -A INPUT -p UDP --dport bootps ! -i %s -j REJECT"%(LAN0),
-		"iptables -A INPUT -p UDP --dport bootps ! -i %s -j REJECT"%(LAN1),
-		"iptables -A INPUT -p UDP --dport domain ! -i %s -j REJECT"%(LAN0),
-		"iptables -A INPUT -p UDP --dport domain ! -i %s -j REJECT"%(LAN1),
-		"iptables -A INPUT -p TCP --dport ssh -i %s -j ACCEPT"%(WAN),
-		#"iptables -A INPUT -p TCP ! -i ${LAN} -d 0/0 --dport 0:1023 -j DROP",
-		#"iptables -A INPUT -p UDP ! -i ${LAN} -d 0/0 --dport 0:1023 -j DROP",
-		"iptables -I FORWARD -i %s -d 192.168.0.0/255.255.0.0 -j ACCEPT"%(LAN0),
-		"iptables -I FORWARD -i %s -d 192.168.0.0/255.255.0.0 -j ACCEPT"%(LAN1),
-		"iptables -A FORWARD -i %s -s 192.168.0.0/255.255.0.0 -j ACCEPT"%(LAN0),
-		"iptables -A FORWARD -i %s -s 192.168.0.0/255.255.0.0 -j ACCEPT"%(LAN1),
-		"iptables -A FORWARD -i %s -d 192.168.0.0/255.255.0.0 -j ACCEPT"%(WAN),
-		"iptables -t nat -A POSTROUTING -o %s -j MASQUERADE"%(WAN),
-		"echo 1 > /proc/sys/net/ipv4/ip_forward",
-	]
-	return wide_open
-
-def getWideClosed():
-	LAN0="eth0"
-	LAN1="wlan1"
-	WAN="wlan0"
-	wide_closed=[
+def getCommon():
+	common=[
 		"iptables -F",
 		"iptables -t nat -F",
 		"iptables -P INPUT ACCEPT",
@@ -86,11 +60,59 @@ def getWideClosed():
 		"iptables -P FORWARD DROP",
 		"iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT",
 		"iptables -I INPUT 1 -i %s -j ACCEPT"%(LAN1),
+		"iptables -I INPUT 1 -i %s -j ACCEPT"%(LAN0),
+		"iptables -I INPUT 1 -i lo -j ACCEPT",
+		"iptables -A INPUT -p UDP --dport bootps ! -i wlan0 -j REJECT",
+		"iptables -A INPUT -p UDP --dport domain ! -i wlan0 -j REJECT",
+		"iptables -A INPUT -p TCP ! -i wlan0 -d 0/0 --dport 0:1023 -j DROP",
+		"iptables -A INPUT -p UDP ! -i wlan0 -d 0/0 --dport 0:1023 -j DROP",
+		"iptables -A INPUT -p UDP --dport bootps ! -i %s -j REJECT"%(LAN0),
+		"iptables -A INPUT -p UDP --dport bootps ! -i %s -j REJECT"%(LAN1),
+		"iptables -A INPUT -p UDP --dport domain ! -i %s -j REJECT"%(LAN0),
+		"iptables -A INPUT -p UDP --dport domain ! -i %s -j REJECT"%(LAN1),
+		"iptables -A INPUT -p TCP --dport ssh -i %s -j ACCEPT"%(WAN),
+	]
+	#	"iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT",
+	return common
+
+def getWideOpen():
+	wide_open=[
+		"iptables -F",
+		"iptables -t nat -F",
+		"iptables -P INPUT ACCEPT",
+		"iptables -P OUTPUT ACCEPT",
+		"iptables -P FORWARD ACCEPT",
+		#"iptables -P FORWARD ACCEPT",
+		"iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT",
+		"iptables -I INPUT 1 -i %s -j ACCEPT"%(LAN1),
+		"iptables -I INPUT 1 -i %s -j ACCEPT"%(LAN0),
+		"iptables -I INPUT 1 -i lo -j ACCEPT",
+		"iptables -A INPUT -p UDP --dport bootps ! -i %s -j REJECT"%(LAN0),
+		"iptables -A INPUT -p UDP --dport bootps ! -i %s -j REJECT"%(LAN1),
+		"iptables -A INPUT -p UDP --dport domain ! -i %s -j REJECT"%(LAN0),
+		"iptables -A INPUT -p UDP --dport domain ! -i %s -j REJECT"%(LAN1),
+		"iptables -A INPUT -p TCP --dport ssh -i %s -j ACCEPT"%(WAN),
+		#
+		"iptables -t nat -A POSTROUTING -o %s -j MASQUERADE"%(WAN),
+	]
+	#	"iptables -t nat -A POSTROUTING -o %s -j MASQUERADE"%(WAN),
+	#	"echo 1 > /proc/sys/net/ipv4/ip_forward",
+	return wide_open
+
+def getWideClosed():
+	wide_closed=[
+		"iptables -F",
+		"iptables -t nat -F",
+		"iptables -P INPUT ACCEPT",
+		"iptables -P OUTPUT ACCEPT",
+		"iptables -P FORWARD DROP",
+		"iptables -I INPUT 1 -i %s -j ACCEPT"%(LAN1),
 		"iptables -I INPUT 1 -i lo -j ACCEPT",
 		"iptables -A INPUT -p UDP --dport bootps ! -i %s -j REJECT"%(LAN1),
 		"iptables -A INPUT -p UDP --dport domain ! -i %s -j REJECT"%(LAN1),
 		"iptables -A INPUT -p TCP ! -i %s -d 0/0 --dport 0:1023 -j DROP"%(LAN1),
 		"iptables -A INPUT -p UDP ! -i %s -d 0/0 --dport 0:1023 -j DROP"%(LAN1),
+		"iptables -t nat -A POSTROUTING -o %s -j MASQUERADE"%(WAN),
 	]
 	return wide_closed
 

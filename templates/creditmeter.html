@@ -13,14 +13,21 @@ fieldset{width:0%;padding:30px 30px;}
 <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
 <link rel="shortcut icon" href="/static/creditmeter/images/anim.png">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="/static/creditmeter/js/HackTimer.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
 <script>
 var print=function(msg){console.log(msg);}
-
+var RUNNING=false
 $(document).ready(function(){
 
 });//ready
 
+var wideOpenCB=function(){
+	updateSomething("wide_open","status_report_div")
+}
+var wideClosedCB=function(){
+	updateSomething("wide_closed","status_report_div")
+}
 var localCB=function(){
 	updateSomething("local_balance","local_balance_div")
 }
@@ -51,20 +58,36 @@ var txOff=function(){
 }
 var runCB=function(){
 	print("runCB")
+	if(RUNNING==true){
+		RUNNING=false;
+		$("#is_running_div").html("false")
+	}
+	else{
+		RUNNING=true;
+		$("#is_running_div").html("true")
+		stepCB()
+	}
+}
+var stepCB=function(){
+	print("stepCB")
 	if($("#WAIT").hasClass("orange")){$("#WAIT").toggleClass("orange")}
 	if($("#RX").hasClass("green")){$("#RX").toggleClass("green")}
 	$("#TX").toggleClass("red");
 	window.setTimeout(txOff,1000);
+	if(!RUNNING)return;
+
 	$.ajax({
 		type: "GET",
 		url: "/keepalive",
 		success: function(rval){
 			try{
 			console.log(rval);
+			if(rval=="STOP"){print("runCB received STOP");RUNNING=false;$("#is_running_div").html("false");return;}
 			$("#RX").toggleClass("green");//on
 			$("#local_balance_div").html(rval);//rval=raw integer
+			$("#is_running_div").html("true")
 			window.setTimeout(rxOff,1000);
-			window.setTimeout(runCB,5000);
+			window.setTimeout(stepCB,5000);
 			}catch(e){console.log(e)}
 		}
 	});
@@ -86,9 +109,10 @@ var updateSomething=function(what,where){
 <body>
 
 <h3>Welcome {{username}}!</h3>
-<h3>is_parent: {{is_parent}}</h3>
+<h3>Parent: {{is_parent}}</h3>
 <h3>Remote Username: {{remote_username}}</h3>
 <h3>Remote Password: {{remote_password}}</h3>
+
 
 <fieldset>
 	<legend>Access Control</legend>
@@ -100,7 +124,9 @@ var updateSomething=function(what,where){
 	</tr></table>
 
 	<table><tr>
-	<td><div>credit_balance: <div></td><td><div id="local_balance_div"> {{credit_balance}} </div></td><td><button onclick="localCB()"><i style="font-size:24px" class="fa">&#xf021;</i></button></td>
+	<td><div>CreditBalance: <div></td><td><div id="local_balance_div"> {{credit_balance}} </div></td><td><button onclick="localCB()"><i style="font-size:24px" class="fa">&#xf021;</i></button></td>
+	</tr><tr>
+	<td><div>MeterRunning: </div></td><td><div id="is_running_div"> false </div></td>
 	</tr></table>
 
 </fieldset>
@@ -108,14 +134,16 @@ var updateSomething=function(what,where){
 <fieldset>
 	<legend>Remote Account</legend>
 	<table><tr>
-	<td><div>credit_balance: <div></td><td><div id="remote_balance_div"> 000 </div></td><td><button onclick="updateCB()"><i style="font-size:24px" class="fa">&#xf021;</i></button></td>
+	<td><div>Credit Balance: <div></td><td><div id="remote_balance_div"> 000 </div></td><td><button onclick="updateCB()"><i style="font-size:24px" class="fa">&#xf021;</i></button></td>
 	</tr><tr>
-	<td><div>transfer_amount: <div></td><td><div id="transfer_balance_div"> 000 </div></td><td><button onclick="transferCB()"><i style="font-size:24px" class="fa">&#xf021;</i></button></td>
+	<td><div>Transfer Amount: <div></td><td><div id="transfer_balance_div"> 000 </div></td><td><button onclick="transferCB()"><i style="font-size:24px" class="fa">&#xf021;</i></button></td>
 	</tr></table>
 </fieldset>
 
+<button style="font-size:24px" onclick="wideOpenCB()">WideOpen</button>
+<button style="font-size:24px" onclick="wideClosedCB()">WideClosed</button>
+<br>
 <button style="font-size:24px" onclick="logoutCB()">Logout</button>
-
 <button style="font-size:24px" onclick="statusCB()">Status</button>
 <div id="status_report_div"></div>
 

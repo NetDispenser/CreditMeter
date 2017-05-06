@@ -27,6 +27,13 @@ def logout_view(request):
 
 def keepalive(request):
 	ip=request.META.get('HTTP_X_FORWARDED_FOR') or request.META.get('REMOTE_ADDR')
+	if request.user.userprofile.credit_balance<0:
+		mylogger.debug("Returning STOP to "+ip)
+		return HttpResponse("STOP")
+	else:
+		mylogger.debug("Balance:%d"%(request.user.userprofile.credit_balance))
+
+
 	mylogger.debug("keepalive "+ip)
 	mylogger.debug(server_str)
 	s=xmlrpc.client.Server(server_str)
@@ -119,6 +126,14 @@ def get(request):#remote balance query and xfer @here, plus others.
 			s=xmlrpc.client.Server(server_str)
 			mylogger.debug("calling daemon for status_report")
 			rval=s.json_status_report()
+
+		elif qs=='wide_open':
+			s=xmlrpc.client.Server(server_str)
+			rval=s.wide_open()
+
+		elif qs=='wide_closed':
+			s=xmlrpc.client.Server(server_str)
+			rval=s.wide_closed()
 
 	except:mylogger.exception("UhOh")
 	return HttpResponse(rval);
