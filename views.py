@@ -38,7 +38,7 @@ def keepalive(request):
 	mylogger.debug(server_str)
 	s=xmlrpc.client.Server(server_str)
 	mylogger.debug("calling ...")
-	dt=s.keepalive(request.user.username,request.user.userprofile.mac_addrs)
+	dt=s.keepalive(request.user.userprofile.mac_addrs)
 	mylogger.debug("ahh :)")
 	request.user.userprofile.credit_balance-=dt
 	request.user.userprofile.save()

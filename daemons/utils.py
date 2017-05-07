@@ -71,6 +71,7 @@ def getCommon():
 		"iptables -A INPUT -p UDP --dport domain ! -i %s -j REJECT"%(LAN0),
 		"iptables -A INPUT -p UDP --dport domain ! -i %s -j REJECT"%(LAN1),
 		"iptables -A INPUT -p TCP --dport ssh -i %s -j ACCEPT"%(WAN),
+		"iptables -A POSTROUTING -t nat -o %s -j MASQUERADE"%(WAN),
 	]
 	#	"iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT",
 	return common
