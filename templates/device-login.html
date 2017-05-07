@@ -3,9 +3,9 @@
 <title>{{title}}</title>
 
 <link rel="shortcut icon" href="/static/creditmeter/images/anim.png">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="/static/creditmeter/css/font-awesome.min.css">
 <link rel="stylesheet" href="/static/creditmeter/css/login.css">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+<script src="/static/creditmeter/js/jquery.min.js"></script>
 
 <script>
 var decode=function(str){
@@ -19,34 +19,44 @@ var decode=function(str){
 	return decoded;
 }
 $(document).ready(function(){
-	$("#device_div").html("{{device_name}}");
-	var pyld={"device_name":"{{device_name}}","device_ip":"{{device_ip}}","device_mac":"{{device_mac}}"};
-	$("#login_pyld").val(JSON.stringify(pyld));//prepares for submit
+	$("#device_div").html("<b>Device Name: </b>{{device_name}}");
+	var child_pyld={"account_type":"child","device_name":"{{device_name}}","device_ip":"{{device_ip}}","device_mac":"{{device_mac}}"};
+	$("#child_pyld").val(JSON.stringify(child_pyld));//prepares for submit
+	var parent_pyld={"account_type":"parent","device_name":"{{device_name}}","device_ip":"{{device_ip}}","device_mac":"{{device_mac}}"};
+	$("#parent_pyld").val(JSON.stringify(parent_pyld));//prepares for submit
 });
 </script>
 </head>
 
 <body>
 <div id="modal" class="modal" style="display:block;">
-	<form class="modal-content animate" action="/" method="POST" style="max-width:400px;">
-		{% csrf_token %}
+	<div class="modal-content">
 		<div class="imgcontainer">
 			<span onclick="document.getElementById('modal').style.display='none'" class="close" title="Close Modal">&times;</span>
-			<i><h2>Credit Meter Welcome</h2></i>
+			<i><h2>{{title}}</h2></i>
 		</div>
 
 		<div class="container">
 			<table align="center">
-			<tr><td>
-			<label><b>Device Name:</b></label>
-			</td><td>
+			<tr><td colspan="2">
 			<div id="device_div"></div>
 			</td></tr>
+			<tr><td>
+				<form class="animate" action="/" method="POST" style="max-width:400px;">
+					{% csrf_token %}
+					<button type="submit">Child</button>
+					<input type="hidden" id="child_pyld" name="login_pyld" value=""></input>
+				</form>
+			</td><td>
+				<form class="animate" action="/" method="POST" style="max-width:400px;">
+					{% csrf_token %}
+					<button type="submit">Parent</button>
+					<input type="hidden" id="parent_pyld" name="login_pyld" value=""></input>
+				</form>
+			</td></tr>
 			</table>
-			<button type="submit">Enter</button>
 		</div>
-		<input type="hidden" id="login_pyld" name="login_pyld" value=""></input>
-	</form>
+	</div>
 </div>
 
 <script>

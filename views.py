@@ -61,17 +61,22 @@ def home(request):
 		mylogger.debug(request.POST["login_pyld"])
 		pyld=json.loads(request.POST["login_pyld"])
 		try:
-			x=User.objects.get(username=pyld['device_name'])
+			uname=pyld['device_name']+"_STUDENT"
+			if pyld["account_type"]=="parent":uname=pyld['device_name']+"_PARENT"
+			x=User.objects.get(username=uname)
 			mylogger.debug("got user")
 			login(request,x)
 			mylogger.debug("logged-in user")
 			return app(request)
 		except:
 			mylogger.debug("creating new account ...")
-			acct=User.objects.create_user(username=pyld['device_name'],password='pycon2017')
+			new_uname=pyld['device_name']+"_STUDENT"
+			if pyld["account_type"]=="parent":new_uname=pyld['device_name']+"_PARENT"
+			acct=User.objects.create_user(username=new_uname,password='pycon2017')
 			acct.userprofile.is_parent=False
-			acct.userprofile.remote_username="guest"
-			acct.userprofile.remote_password="pycon2017"
+			if pyld["account_type"]=="parent":acct.userprofile.is_parent=True
+			acct.userprofile.remote_username="guest"#change via /admin (i.e. django admin)
+			acct.userprofile.remote_password="pycon2017"#for demo purposes everyone takes credits from same remote account (guest, pycon2017)
 			acct.userprofile.mac_addrs.append(opt['device_mac'])#initialize with mac of device being used to create account
 			acct.userprofile.save()
 			acct.save()
@@ -109,6 +114,7 @@ def get(request):#remote balance query and xfer @here, plus others.
 
 		elif qs=='remote_balance':
 			url='%sget?request=update&username=%s&password=%s'%(CREDIT_FEEDER_URL,request.user.userprofile.remote_username,request.user.userprofile.remote_password)
+			mylogger.debug(url)
 			with urllib.request.urlopen(url) as response:
 				remote_balance = int(response.read())
 			rval=remote_balance
