@@ -63,11 +63,11 @@ class CreditMeterDaemon(Daemon):
 					cmds+=getMACOnly(client['mac'])#concatenate lists
 				else:
 					logging.debug("%s is stopped"%(client['mac']))
+			"""
 
 			for cidx in range(len(cmds)):
 				logging.debug(cmds[cidx])
 				os.system(cmds[cidx])
-			"""
 		except:
 			logging.exception("exception updating iptables")
 		return 0
@@ -90,9 +90,9 @@ class CreditMeterDaemon(Daemon):
 			self.clients[mac]['t_last']=t_now
 			self.clients[mac]['t_elapsed']=0
 			cmds=[
-				"iptables -A FORWARD -i %s -m mac --mac-source %s -j ACCEPT"%(LAN0,mac),
-				"iptables -A FORWARD -i %s -m mac --mac-source %s -j ACCEPT"%(LAN1,mac),
-				"iptables -A FORWARD -i %s -m mac --mac-source %s -j ACCEPT"%(WAN,mac),
+				"iptables -I FORWARD -i %s -m mac --mac-source %s -j ACCEPT"%(LAN0,mac),
+				"iptables -I FORWARD -i %s -m mac --mac-source %s -j ACCEPT"%(LAN1,mac),
+				"iptables -I FORWARD -i %s -m mac --mac-source %s -j ACCEPT"%(WAN,mac),
 			]
 			for cidx in range(len(cmds)):
 				logging.debug(cmds[cidx])
