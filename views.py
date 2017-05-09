@@ -49,7 +49,9 @@ def home(request):
 	mylogger.debug("home");
 	if request.user.is_authenticated():
 		mylogger.debug("already authenticated:"+request.user.username)
-		return app(request)
+		if request.user.userprofile.is_parent==True:
+			return parent_app(request,request.user.username,{})
+		return student_app(request,request.user.username,{})
 
 	IP=request.META.get('HTTP_X_FORWARDED_FOR') or request.META.get('REMOTE_ADDR')
 	mylogger.debug("not authenticated: %s"%(IP))
@@ -60,30 +62,36 @@ def home(request):
 		mylogger.debug("getting login_pyld from post ...")
 		mylogger.debug(request.POST["login_pyld"])
 		pyld=json.loads(request.POST["login_pyld"])
+		uname=None
+		acct=None
 		try:
 			uname=pyld['device_name']+"_STUDENT"
-			if pyld["account_type"]=="parent":uname=pyld['device_name']+"_PARENT"
-			x=User.objects.get(username=uname)
+			if pyld['account_type']=="parent":uname=pyld['device_name']+"_PARENT"
+			acct=User.objects.get(username=uname)
 			mylogger.debug("got user")
-			login(request,x)
-			mylogger.debug("logged-in user")
-			return app(request)
+			login(request,acct)
+			mylogger.debug("logged-in user "+uname)
+
 		except:
 			mylogger.debug("creating new account ...")
-			new_uname=pyld['device_name']+"_STUDENT"
-			if pyld["account_type"]=="parent":new_uname=pyld['device_name']+"_PARENT"
-			acct=User.objects.create_user(username=new_uname,password='pycon2017')
+			uname=pyld['device_name']+"_STUDENT"
+			if pyld["account_type"]=="parent":uname=pyld['device_name']+"_PARENT"
+			acct=User.objects.create_user(username=uname,password='pycon2017')
 			acct.userprofile.is_parent=False
-			if pyld["account_type"]=="parent":acct.userprofile.is_parent=True
-			acct.userprofile.remote_username="guest"#change via /admin (i.e. django admin)
-			acct.userprofile.remote_password="pycon2017"#for demo purposes everyone takes credits from same remote account (guest, pycon2017)
-			acct.userprofile.mac_addrs.append(opt['device_mac'])#initialize with mac of device being used to create account
+			if pyld["account_type"]=="parent":
+				acct.userprofile.is_parent=True
+				default_student=pyld['device_name']+"_STUDENT"
+				acct.userprofile.students.append(default_student)
 			acct.userprofile.save()
 			acct.save()
 
-			mylogger.debug("logging-in ...")
+			mylogger.debug("logging-in "+uname)
 			login(request,acct)
-			return app(request)
+
+		if acct.userprofile.is_parent==True:
+			return parent_app(request,uname,pyld)
+
+		return student_app(request,uname,pyld)
 
 	mylogger.debug("home, not a post")
 	context={
@@ -139,20 +147,32 @@ def get(request):#remote balance query and xfer @here, plus others.
 
 		elif qs=='wide_closed':
 			s=xmlrpc.client.Server(server_str)
-			rval=s.wide_closed()
+			rval=s.write_default_policy()
 
 	except:mylogger.exception("UhOh")
 	return HttpResponse(rval);
 
 @login_required
-def app(request):
+def student_app(request,uname,pyld):
 	mylogger.debug("app")
 	context={
-		'title':'CreditMeter',
-		'username':request.user.username,
+		'title':'Student@CreditMeter',
+		'username':uname,
 		'is_parent':request.user.userprofile.is_parent,
+		'str_pyld':json.dumps(pyld),
 		'credit_balance':request.user.userprofile.credit_balance,
 		'remote_username':request.user.userprofile.remote_username,
 		'remote_password':request.user.userprofile.remote_password,
 	}
-	return render(request,'creditmeter.html',context)
+	return render(request,'student_app.html',context)
+
+@login_required
+def parent_app(request,uname,pyld):
+	mylogger.debug("app")
+	context={
+		'title':'Parent@CreditMeter',
+		'username':uname,
+		'is_parent':request.user.userprofile.is_parent,
+		'str_pyld':json.dumps(pyld),
+	}
+	return render(request,'parent_app.html',context)

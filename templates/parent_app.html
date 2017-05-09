@@ -1,0 +1,54 @@
+<html>
+<head>
+<title>{{title}}</title>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+<link rel="shortcut icon" href="/static/creditmeter/images/anim.png">
+<link rel="stylesheet" href="/static/creditmeter/css/font-awesome.min.css">
+<script src="/static/creditmeter/js/HackTimer.js"></script>
+<script src="/static/creditmeter/js/jquery.min.js"></script>
+<script>
+var print=function(msg){console.log(msg);}
+$(document).ready(function(){});//ready
+
+var statusCB=function(){
+	updateSomething("json_status_report","status_report_div")
+}
+var logoutCB=function(){
+	window.location="/logout";
+}
+var wideOpenCB=function(){
+	updateSomething("wide_open","status_report_div")
+}
+var wideClosedCB=function(){
+	updateSomething("wide_closed","status_report_div")
+}
+var updateSomething=function(what,where){
+	$.ajax({
+		type: "GET",
+		url: "get?"+what,
+		success: function(rval){
+			try{
+			console.log(rval);
+			$("#"+where).html(rval);
+			}catch(e){console.log(e)}
+		}
+	});
+}
+</script>
+</head>
+<body>
+
+<h3>Welcome {{username}}!</h3>
+<h3>Parent: {{is_parent}}</h3>
+
+<button style="font-size:24px" onclick="wideOpenCB()">WideOpen</button>
+<button style="font-size:24px" onclick="wideClosedCB()">WideClosed</button>
+<br>
+<button style="font-size:24px" onclick="logoutCB()">Logout</button>
+<button style="font-size:24px" onclick="statusCB()">Status</button>
+<div id="status_report_div"></div>
+
+</body>
+</html>

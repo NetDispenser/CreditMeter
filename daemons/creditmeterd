@@ -16,7 +16,7 @@ class CreditMeterDaemon(Daemon):
 		self.clients={}
 		self.t=None
 		#self.wide_closed()
-		self.write_policy()
+		self.write_default_policy()
 
 	def json_status_report(self):#to query from python shell
 		return json.dumps(self.clients)
@@ -24,17 +24,14 @@ class CreditMeterDaemon(Daemon):
 	def manage_firewall(self):
 		while True:
 			try:
-				#policy_update=False
 				for key in list(self.clients):
 					client=self.clients[key]
 					if client['running']:
-						#logging.debug(client['mac']+' is running ...')
 						t_now=time.time()
 						dt=int(t_now-client['t_last'])
 						if dt>10:
 							client['running']=False
 							logging.debug("client: "+client['mac']+" running=False")
-							#policy_update=True
 							cmds=[
 								"iptables -D FORWARD -i %s -m mac --mac-source %s -j ACCEPT"%(LAN0,client['mac']),
 								"iptables -D FORWARD -i %s -m mac --mac-source %s -j ACCEPT"%(LAN1,client['mac']),
@@ -43,28 +40,15 @@ class CreditMeterDaemon(Daemon):
 							for cidx in range(len(cmds)):
 								logging.debug(cmds[cidx])
 								os.system(cmds[cidx])
-						#else:logging.debug(client['mac']+" is okay")
-				#if policy_update:
-				#	dummy=self.write_policy()
 				time.sleep(1)
 			except:
 				logging.exception("firewall checker exception")
 				time.sleep(1)
 
-	def write_policy(self):
+	def write_default_policy(self):
 		logging.debug("write_policy")
 		try:
-			cmds=getCommon()
-			#cmds.append("iptables -A POSTROUTING -t nat -o %s -j MASQUERADE"%(WAN))
-			"""
-			for key in list(self.clients):
-				client=self.clients[key]
-				if client['running']:
-					cmds+=getMACOnly(client['mac'])#concatenate lists
-				else:
-					logging.debug("%s is stopped"%(client['mac']))
-			"""
-
+			cmds=getDefaultPolicy()
 			for cidx in range(len(cmds)):
 				logging.debug(cmds[cidx])
 				os.system(cmds[cidx])
@@ -84,7 +68,6 @@ class CreditMeterDaemon(Daemon):
 		return 0
 
 	def update_client(self,mac):
-		policy_update=False
 		t_now=time.time()
 		if not self.clients[mac]['running']:
 			self.clients[mac]['t_last']=t_now
@@ -103,7 +86,7 @@ class CreditMeterDaemon(Daemon):
 		self.clients[mac]['t_elapsed_total']+=dt
 		self.clients[mac]['t_last']=t_now
 		self.clients[mac]['running']=True
-		return dt,policy_update
+		return dt
 
 	def start_thread(self):
 		if not self.t:
@@ -115,15 +98,7 @@ class CreditMeterDaemon(Daemon):
 
 	def wide_open(self):
 		logging.debug("wide_open")
-		cmds=getWideOpen()
-		for cidx in range(len(cmds)):
-			logging.debug(cmds[cidx])
-			os.system(cmds[cidx])
-		return self.json_status_report()
-
-	def wide_closed(self):
-		logging.debug("wide_closed")
-		cmds=getWideClosed()
+		cmds=getWideOpenPolicy()
 		for cidx in range(len(cmds)):
 			logging.debug(cmds[cidx])
 			os.system(cmds[cidx])
@@ -132,20 +107,15 @@ class CreditMeterDaemon(Daemon):
 	def keepalive(self,*args):
 		#this guy merely does as told, ie open/close iptables per mac addr.  if views tells
 		#this func to keepalive then we do it, ie views checks balances etc. thus ...
-		#also self.this runs a thread checking for timed-out connections to remove, notably
+		#also self.this runs a thread checking for timed-out connections to remove, and notably this occurs
 		#independently of calls to keepalive.  It doesn't care about the username. NEED: don't send username!
 		if not self.t:self.start_thread()
 		mac_addrs=args[0]
-		policy_update=False
 		for mac in mac_addrs:
 			logging.debug(mac)
 			if not list(self.clients).count(mac):
 				self.add_client(mac)
-			dt,need_update=self.update_client(mac)#update=charge dt;rval is dt which view to charge credit balance
-			if need_update:policy_update=True
-
-		#if policy_update:
-		#	self.write_policy()
+			dt=self.update_client(mac)#update=charge dt;rval is dt which view to charge credit balance
 		return dt
 
 	def run(self):
