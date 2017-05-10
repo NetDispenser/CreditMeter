@@ -155,9 +155,10 @@ def get(request):#remote balance query and xfer @here, plus others.
 @login_required
 def student_app(request,uname,pyld):
 	mylogger.debug("app")
+	stripped_uname=uname[:-8]
 	context={
 		'title':'Student@CreditMeter',
-		'username':uname,
+		'username':stripped_uname,
 		'is_parent':request.user.userprofile.is_parent,
 		'str_pyld':json.dumps(pyld),
 		'credit_balance':request.user.userprofile.credit_balance,

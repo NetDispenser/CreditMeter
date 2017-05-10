@@ -1,11 +1,4 @@
 <html>
-<style>
-fieldset{width:0%;padding:30px 30px;}
-.led{width:32px;height:24px;background-color: grey}
-.led.red{background-color: red}
-.led.green{background-color: green}
-.led.orange{background-color: orange}
-</style>
 <head>
 <title>{{title}}</title>
 <meta charset="UTF-8">
@@ -13,6 +6,7 @@ fieldset{width:0%;padding:30px 30px;}
 <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
 <link rel="shortcut icon" href="/static/creditmeter/images/anim.png">
 <link rel="stylesheet" href="/static/creditmeter/css/font-awesome.min.css">
+<link rel="stylesheet" href="/static/creditmeter/css/creditmeter.css">
 <script src="/static/creditmeter/js/HackTimer.js"></script>
 <script src="/static/creditmeter/js/jquery.min.js"></script>
 <script>
@@ -27,13 +21,13 @@ var wideClosedCB=function(){
 	updateSomething("wide_closed","status_report_div")
 }
 var localCB=function(){
-	updateSomething("local_balance","local_balance_div")
+	updateSomething("local_balance","localbalancediv")
 }
 var updateCB=function(){
-	updateSomething("remote_balance","remote_balance_div")
+	updateSomething("remote_balance","remotebalancediv")
 }
 var transferCB=function(){
-	updateSomething("transfer_balance","transfer_balance_div")
+	updateSomething("transfer_balance","transferdiv")
 }
 var statusCB=function(){
 	updateSomething("json_status_report","status_report_div")
@@ -58,11 +52,13 @@ var runCB=function(){
 	print("runCB")
 	if(RUNNING==true){
 		RUNNING=false;
-		$("#is_running_div").html("false")
+		$("#isrunningdiv").html("Status: Stopped")
+		$("#pushrunstop").html("Push to Run")
 	}
 	else{
 		RUNNING=true;
-		$("#is_running_div").html("true")
+		$("#isrunningdiv").html("Status: Running")
+		$("#pushrunstop").html("Push to Stop")
 		stepCB()
 	}
 }
@@ -82,8 +78,8 @@ var stepCB=function(){
 			console.log(rval);
 			if(rval=="STOP"){print("runCB received STOP");RUNNING=false;$("#is_running_div").html("false");return;}
 			$("#RX").toggleClass("green");//on
-			$("#local_balance_div").html(rval);//rval=raw integer
-			$("#is_running_div").html("true")
+			$("#localbalancediv").html("Local Balance: "+rval);//rval=raw integer
+			$("#isrunningdiv").html("Status: Running")
 			window.setTimeout(rxOff,1000);
 			window.setTimeout(stepCB,5000);
 			}catch(e){console.log(e)}
@@ -105,42 +101,64 @@ var updateSomething=function(what,where){
 </script>
 </head>
 <body>
+	<div class="icon-bar" style="position:fixed;z-index:10;left:0px;top:0px;" id="icon_bar">
+		<a class="quarter"></a>
+		<a class="half">{{username}}</a>
+		<a class="quarter" onclick="logoutCB()"><i class="fa">&#xf2d3;</i></a>
+	</div>
+	<div id="v100" style="height:70px"></div>
 
-<h3>Welcome {{username}}!</h3>
-<h3>Parent: {{is_parent}}</h3>
-<h3>Remote Username: {{remote_username}}</h3>
-<h3>Remote Password: {{remote_password}}</h3>
+	<div class="row" id="row1">
+	  <div class="column" id="column1">
+	    <div class="card" id="card1">
+				<div class="container" id="container1">
+
+					<button class="pressbutton"  onclick="runCB()">
+						<div id="pushrunstop">Push to Run</div>
+						<table align="center"><tr>
+						<td><div id="TX" class="led"></div></td>
+						<td><div id="RX" class="led"></div></td>
+						<td><div id="WAIT" class="led"></div></td>
+						</tr></table>
+
+						<table align="center"><tr>
+						<td colspan="2"><div id="localbalancediv">Local Balance: {{credit_balance}}</div></td>
+						</tr><tr>
+						<td colspan="2"><div id="isrunningdiv">Status: Stopped </div></td>
+						</tr></table>
+					</button>
+
+					<br><br>
+					<button class="pressbutton"  onclick="updateCB()">
+						<div id="pushupdate">Push to Update</div>
+						<table>
+						<tr><td>Remote Balance: </td><td><div id="remotebalancediv">---</div></td></tr>
+						</table>
+					</button>
+
+					<br><br>
+					<button class="pressbutton"  onclick="transferCB()">
+						<div id="pushtransfer">Push to Transfer</div>
+						<table>
+						<tr><td>Transfer Amount: </td><td><div id="transferdiv">---</div></td></tr>
+						</table>
+					</button>
+<!--
+					<br><br>
+					<button class="pressbutton" >Logout</button>
+					<br><br>
+-->
+					<div id="status_report_div"></div>
+
+				</div>
+			</div>
+		</div>
+	</div>
 
 
-<fieldset>
-	<legend>Access Control</legend>
-	<table><tr>
-	<td><div id="TX" class="led"></div></td>
-	<td><div id="RX" class="led"></div></td>
-	<td><div id="WAIT" class="led"></div></td>
-	<td><button onclick="runCB()"><i style="font-size:24px" class="fa">&#xf2b5;</i></button></td>
-	</tr></table>
 
-	<table><tr>
-	<td><div>CreditBalance: <div></td><td><div id="local_balance_div"> {{credit_balance}} </div></td><td><button onclick="localCB()"><i style="font-size:24px" class="fa">&#xf021;</i></button></td>
-	</tr><tr>
-	<td><div>MeterRunning: </div></td><td><div id="is_running_div"> false </div></td>
-	</tr></table>
 
-</fieldset>
 
-<fieldset>
-	<legend>Remote Account</legend>
-	<table><tr>
-	<td><div>Credit Balance: <div></td><td><div id="remote_balance_div"> 000 </div></td><td><button onclick="updateCB()"><i style="font-size:24px" class="fa">&#xf021;</i></button></td>
-	</tr><tr>
-	<td><div>Transfer Amount: <div></td><td><div id="transfer_balance_div"> 000 </div></td><td><button onclick="transferCB()"><i style="font-size:24px" class="fa">&#xf021;</i></button></td>
-	</tr></table>
-</fieldset>
-
-<button style="font-size:24px" onclick="logoutCB()">Logout</button>
-<button style="font-size:24px" onclick="statusCB()">Status</button>
-<div id="status_report_div"></div>
 
 </body>
 </html>

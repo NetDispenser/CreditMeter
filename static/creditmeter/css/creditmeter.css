@@ -1,0 +1,93 @@
+body{background-color:#333;color:white;}
+#localbalancediv{text-align:center;}
+#isrunningdiv{text-align:center;}
+.led{width:32px;height:24px;background-color: #555;border:solid 1px;}
+.led.red{background-color: red}
+.led.green{background-color: green}
+.led.orange{background-color: orange}
+
+.pressbutton {
+  padding: 15px 25px;
+  font-size: 24px;
+  text-align: center;
+  cursor: pointer;
+  outline: none;
+  color: #fff;
+  background-color: #3e8e41;
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 5px #999;
+	text-align:center;
+	width:250px;
+}
+
+.pressbutton:hover {background-color: #39c968}
+
+.pressbutton:active {
+  background-color: #39c968;
+  box-shadow: 0 2px #666;
+  transform: translateY(3px);
+}
+
+/*Horizontal icon-bar*/
+.icon-bar {
+    width: 100%; /* Full-width */
+    background-color: #555; /* Dark-grey background */
+    overflow: hidden; /* Overflow due to float */
+}
+.icon-bar a{
+	float: left; /* Float links side by side */
+	text-align: center; /* Center-align text */
+	padding: 12px 0px; /* Some top and bottom padding */
+	transition: all 0.3s ease; /* Add transition for hover effects */
+	color: white; /* White text color */
+	font-size: 32px; /* Increased font size */
+	cursor:pointer;
+	height:100%;
+}
+.icon-bar .quarter {
+    width: 25%; /* Equal width (5 icons with 20% width each = 100%)*/
+}
+.icon-bar .half {
+    width: 50%; /* Equal width (5 icons with 20% width each = 100%)*/
+}
+
+.icon-bar a:hover {
+    background-color: #4CAF50; /* Add a hover color */
+}
+html {
+  box-sizing: border-box;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+.row{text-align: center;}
+
+.column {
+  float: right;
+  width: 100%;
+  margin-bottom: 16px;
+	margin-top:16px;
+  padding: 0 8px;
+}
+@media (max-width: 650px) {
+  .column {
+    width: 100%;
+    display: block;
+  }
+}
+
+.card {
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+}
+
+.container {
+  padding: 20 16px;
+}
+
+.container::after, .row::after {
+  content: "";
+  clear: both;
+  display: table;
+}
