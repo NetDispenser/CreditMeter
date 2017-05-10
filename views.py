@@ -81,7 +81,6 @@ def home(request):
 			if pyld["account_type"]=="parent":
 				acct.userprofile.is_parent=True
 				default_student=pyld['device_name']+"_STUDENT"
-				acct.userprofile.students.append(default_student)
 			acct.userprofile.save()
 			acct.save()
 

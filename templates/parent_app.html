@@ -6,6 +6,7 @@
 <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
 <link rel="shortcut icon" href="/static/creditmeter/images/anim.png">
 <link rel="stylesheet" href="/static/creditmeter/css/font-awesome.min.css">
+<link rel="stylesheet" href="/static/creditmeter/css/creditmeter.css">
 <script src="/static/creditmeter/js/HackTimer.js"></script>
 <script src="/static/creditmeter/js/jquery.min.js"></script>
 <script>
@@ -39,6 +40,12 @@ var updateSomething=function(what,where){
 </script>
 </head>
 <body>
+	<div class="icon-bar" style="position:fixed;z-index:10;left:0px;top:0px;" id="icon_bar">
+		<a class="quarter"></a>
+		<a class="half">{{username}}</a>
+		<a class="quarter" onclick="logoutCB()"><i style="font-size:38px;" class="fa">&#xf2d3;</i></a>
+	</div>
+	<div id="v100" style="height:70px"></div>
 
 <h3>Welcome {{username}}!</h3>
 <h3>Parent: {{is_parent}}</h3>
