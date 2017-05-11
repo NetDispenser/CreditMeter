@@ -1,10 +1,10 @@
-body{background-color:#333;color:white;}
+body{background-color:#0069e9;color:white;}
 #localbalancediv{text-align:center;}
 #isrunningdiv{text-align:center;}
 .led{width:48px;height:36px;background-color: #555;border:solid 1px;}
-.led.red{background-color: red}
-.led.green{background-color: green}
-.led.orange{background-color: orange}
+.led.red{background-color: darkred}
+.led.green{background-color: darkgreen}
+.led.orange{background-color: darkblue}
 
 .pressbutton {
   padding: 15px 25px;
@@ -12,19 +12,20 @@ body{background-color:#333;color:white;}
   text-align: center;
   cursor: pointer;
   outline: none;
-  color: #fff;
-  background-color: #3e8e41;
+  color: white;
+  background-color: darkorange;
   border: none;
   border-radius: 5px;
   box-shadow: 0 5px #999;
 	text-align:center;
 	width:250px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.4); 
 }
 
-.pressbutton:hover {background-color: #39c968}
+.pressbutton:hover {background-color: orange}
 
 .pressbutton:active {
-  background-color: #39c968;
+  background-color: orange;
   box-shadow: 0 2px #666;
   transform: translateY(3px);
 }
@@ -53,7 +54,7 @@ body{background-color:#333;color:white;}
 }
 
 .icon-bar a:hover {
-    background-color: #4CAF50; /* Add a hover color */
+    background-color: darkorange; /* Add a hover color */
 }
 html {
   box-sizing: border-box;
@@ -79,7 +80,7 @@ html {
 }
 
 .card {
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+/*  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); */
 }
 
 .container {

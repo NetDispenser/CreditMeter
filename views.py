@@ -169,9 +169,10 @@ def student_app(request,uname,pyld):
 @login_required
 def parent_app(request,uname,pyld):
 	mylogger.debug("app")
+	stripped_uname=uname[:-8]
 	context={
 		'title':'Parent@CreditMeter',
-		'username':uname,
+		'username':stripped_uname,
 		'is_parent':request.user.userprofile.is_parent,
 		'str_pyld':json.dumps(pyld),
 	}

@@ -32,6 +32,10 @@ var transferCB=function(){
 var statusCB=function(){
 	updateSomething("json_status_report","status_report_div")
 }
+var earnCB=function(){
+	var url="http://www.creditfeed.me";
+	window.open(url);
+}
 var logoutCB=function(){
 	window.location="/logout";
 }
@@ -140,14 +144,14 @@ var updateSomething=function(what,where){
 					<button class="pressbutton"  onclick="transferCB()">
 						<div id="pushtransfer">Push to Transfer</div>
 						<table>
-						<tr><td>Amount Transferred: </td><td><div id="transferdiv">---</div></td></tr>
+						<tr><td>Transferred: </td><td><div id="transferdiv">---</div></td></tr>
 						</table>
 					</button>
-<!--
+
 					<br><br>
-					<button class="pressbutton" >Logout</button>
+					<button class="pressbutton" onclick="earnCB()"><i class="fa">&#xf006;</i> Earn Credit <i class="fa">&#xf006;</i></button>
 					<br><br>
--->
+
 					<div id="status_report_div"></div>
 
 				</div>
