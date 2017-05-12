@@ -87,6 +87,7 @@ def home(request):
 			mylogger.debug("logging-in "+uname)
 			login(request,acct)
 
+		mylogger.debug(acct.userprofile.is_parent)
 		if acct.userprofile.is_parent==True:
 			return parent_app(request,uname,pyld)
 
@@ -153,7 +154,7 @@ def get(request):#remote balance query and xfer @here, plus others.
 
 @login_required
 def student_app(request,uname,pyld):
-	mylogger.debug("app")
+	mylogger.debug("student_app")
 	stripped_uname=uname[:-8]
 	context={
 		'title':'Student@CreditMeter',
@@ -168,8 +169,8 @@ def student_app(request,uname,pyld):
 
 @login_required
 def parent_app(request,uname,pyld):
-	mylogger.debug("app")
-	stripped_uname=uname[:-8]
+	mylogger.debug("parent_app")
+	stripped_uname=uname[:-7]
 	context={
 		'title':'Parent@CreditMeter',
 		'username':stripped_uname,

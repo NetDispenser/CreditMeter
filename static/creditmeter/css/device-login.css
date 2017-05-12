@@ -1,0 +1,73 @@
+
+.pressbutton {
+  padding: 15px 25px;
+  font-size: 24px;
+  text-align: center;
+  cursor: pointer;
+  outline: none;
+  color: #fff;
+  background-color: darkorange;
+  border: none;
+  border-radius: 5px;
+  box-shadow: 0 5px #999;
+	text-align:center;
+	width:250px;
+}
+
+.pressbutton:hover {background-color: orange}
+
+.pressbutton:active {
+  background-color: orange;
+  box-shadow: 0 2px #666;
+  transform: translateY(3px);
+}
+
+.modal{
+	height:100%;
+	width:100%;
+}
+.column {
+  float: left;
+  width: 50%;
+  height:100%;
+}
+div{text-align:center;}
+#rhs{background-color: #39c968;}
+#lhs{background-color: #0069e9;}
+/* Center the image and position the close button */
+.imgcontainer {
+    text-align: center;
+    margin: 24px 0 12px 0;
+    position: relative;
+		top:10%;
+}
+
+img.avatar {
+    width: 40%;
+    border-radius: 50%;
+    border:solid rgba(1,1,1,0.2) 7px;
+}
+.sitelabel{
+	position:absolute;
+	top:0px;
+	left:0px;
+	padding: 12px 12px;
+	font-size:24px;
+	color:white;
+}
+@media (orientation: portrait) {
+  .column {
+    width: 100%;
+    height: 50%;
+    display: block;
+  }
+	.sitelabel{font-size:12px;}
+	.pressbutton {
+	  padding: 10px 15px;
+	  font-size: 18px;
+	  border-radius: 3px;
+	  box-shadow: 0 5px #999;
+		text-align:center;
+		width:150px;
+	}
+}

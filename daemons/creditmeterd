@@ -109,6 +109,7 @@ class CreditMeterDaemon(Daemon):
 		#this func to keepalive then we do it, ie views checks balances etc. thus ...
 		#also self.this runs a thread checking for timed-out connections to remove, and notably this occurs
 		#independently of calls to keepalive.  It doesn't care about the username. NEED: don't send username!
+		dt=0
 		if not self.t:self.start_thread()
 		mac_addrs=args[0]
 		for mac in mac_addrs:

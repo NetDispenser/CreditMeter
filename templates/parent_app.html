@@ -43,10 +43,13 @@ var updateSomething=function(what,where){
 	<div class="icon-bar" style="position:fixed;z-index:10;left:0px;top:0px;" id="icon_bar">
 		<a class="quarter"></a>
 		<a class="half">{{username}}</a>
-		<a class="quarter" onclick="logoutCB()"><i style="font-size:38px;" class="fa">&#xf2d3;</i></a>
+		<a class="quarter" onclick="logoutCB()"><i style="font-size:38px;" class="fa">&#xf08b;</i></a>
 	</div>
 	<div id="v100" style="height:70px"></div>
 
+
+
+<div style="display:none">
 <h3>Welcome {{username}}!</h3>
 <h3>Parent: {{is_parent}}</h3>
 
@@ -56,6 +59,7 @@ var updateSomething=function(what,where){
 <button style="font-size:24px" onclick="logoutCB()">Logout</button>
 <button style="font-size:24px" onclick="statusCB()">Status</button>
 <div id="status_report_div"></div>
+</div>
 
 </body>
 </html>
