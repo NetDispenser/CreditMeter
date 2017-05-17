@@ -15,7 +15,7 @@ def mktstamp():
 	truncated=tstamp.split(".")[0]
 	return  truncated
 
-def mkDeviceOptions():
+def mkDeviceOptions(whichkey):#'device_ip','device_mac'
 	opts={'keys':[],}
 	inf=open('/var/lib/misc/dnsmasq.leases')
 	lines=inf.readlines()
@@ -30,7 +30,7 @@ def mkDeviceOptions():
 		opt['device_name']=split_line[3]
 		opt['xtra_mac']=split_line[4]#NEED:lookup (again)
 		#opts.append(opt['device_mac'])
-		key=opt['device_ip']
+		key=opt[whichkey]
 		opts[key]=opt
 		opts['keys'].append(key)
 
@@ -58,7 +58,16 @@ def getDefaultPolicy():
 		"iptables -A INPUT -p TCP --dport ssh -i %s -j ACCEPT"%(WAN),
 		"iptables -A POSTROUTING -t nat -o %s -j MASQUERADE"%(WAN),
 	]
-	#	"iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT",
+	whitelist_macs=["B8:E8:56:26:E4:B0",]
+	whitelist_cmds=[]
+	for mac in whitelist_macs:
+		cmds=[
+			"iptables -I FORWARD -i %s -m mac --mac-source %s -j ACCEPT"%(LAN0,mac),
+			"iptables -I FORWARD -i %s -m mac --mac-source %s -j ACCEPT"%(LAN1,mac),
+			"iptables -I FORWARD -i %s -m mac --mac-source %s -j ACCEPT"%(WAN,mac),
+		]
+		common+=cmds
+
 	return common
 
 def getWideOpenPolicy():

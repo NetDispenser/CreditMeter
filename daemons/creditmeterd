@@ -19,7 +19,7 @@ class CreditMeterDaemon(Daemon):
 		self.write_default_policy()
 
 	def json_status_report(self):#to query from python shell
-		return json.dumps(self.clients)
+		return self.clients
 
 	def manage_firewall(self):
 		while True:

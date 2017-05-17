@@ -9,12 +9,123 @@
 <link rel="stylesheet" href="/static/creditmeter/css/creditmeter.css">
 <script src="/static/creditmeter/js/HackTimer.js"></script>
 <script src="/static/creditmeter/js/jquery.min.js"></script>
+<script src="/static/creditmeter/js/utils.js"></script>
 <script>
 var print=function(msg){console.log(msg);}
-$(document).ready(function(){});//ready
+$(document).ready(function(){
+	var students=JSON.parse(decode("{{str_students}}"));
+	var html="";
+	for(var sidx=0;sidx<students.length;sidx++){
+		print(students[sidx])
+		var opt=document.createElement("option")
+		opt.id=students[sidx]
+		opt.value=students[sidx]
+		opt.text=students[sidx]
+		$("#student_select").append(opt)
+		html+='<a href="#" onclick="studentCB(\''+students[sidx]+'\')">'+students[sidx]+'</a>';
+	}
+	$("#student-usernames").html(html);
+	$("#student_dropdown").html(students[0]);
 
+	statusCB();
+	load_studentCB();
+});
+var load_studentCB=function(){
+//	var student_username=get_selected("student_select",0)
+	var student_username=document.getElementById("student_dropdown").innerHTML;
+	print("load_studentCB: "+student_username);
+	//Get assignment list, then for each assignment call add_assignment_to_student(a)
+	pval={}
+	pval['student_username']=student_username;
+	$('#load_student_pyld').val(JSON.stringify(pval));
+	$.ajax({
+		type: "POST",
+		url: "/load_student",
+		data: $("#load_student_form").serialize(),
+		success: function(rval){
+			print(rval);
+			//var assignments=JSON.parse(decode(rval))
+			//document.getElementById("student_attachments_bar").appendChild(a);
+			//$("#student_attachments_bar").html(decode(rval));
+			json_student=JSON.parse(decode(rval));
+			//{"remote_username": "guest", "username": "android-636c38f1710ccf85_STUDENT", "credit_balance": 3274, "remote_password": "pycon2017", "is_parent": false, "mac_addrs": ["38:1d:d9:ee:02:e7", "38:1d:d9:ee:02:e7", "d4:ae:05:35:dd:8f"]}
+			$("#remote_username").val(json_student['remote_username'])
+			$("#remote_password").val(json_student['remote_password'])
+			$("#credit_balance").val(json_student['credit_balance'])
+			$("#is_parent").val(json_student['is_parent'])
+			$("#mac_addrs").val(json_student['mac_addrs'])
+			$("#username").val(json_student['username'])
+		}
+	});
+}
+var saveStudentCB=function(){
+	$.ajax({
+		type: "POST",
+		url: "/save_student",
+		data: $("#save_student_form").serialize(),
+		success: function(rval){
+			print(rval);
+		}
+	});
+}
 var statusCB=function(){
-	updateSomething("json_status_report","status_report_div")
+	$.ajax({
+		type: "GET",
+		url:"/status_update",
+		success: function(rval){
+			try{
+			//console.log(rval);
+			$("#attachments_bar").html('');
+			var rval=JSON.parse(decode(rval));
+			var t=document.createElement("table");
+			t.className='bp';
+			t.align="center";
+			var r=t.insertRow(-1)
+			r.className='bp';
+			var mac_key=rval['keys'][0]
+			var col_keys=rval[mac_key]['keys']
+			for(var ckidx=0;ckidx<col_keys.length;ckidx++){
+				var c=r.insertCell(-1)
+				c.className='bp';
+				var d=document.createElement('div');
+				d.style.textAlign="center"
+				d.style.color="orange"
+				d.innerHTML=col_keys[ckidx];
+				c.appendChild(d)
+			}
+			for(var kidx=0;kidx<rval['keys'].length;kidx++){
+				var mac=rval['keys'][kidx]
+				r=t.insertRow(-1)
+				for(var ckidx=0;ckidx<col_keys.length;ckidx++){
+					var c=r.insertCell(-1)
+					c.className='bp';
+					var d=document.createElement('div');
+					d.style.textAlign="center"
+					var col_key=col_keys[ckidx]
+					if(col_key=='mac_addrs'){
+						var mac_list=String(rval[mac][col_key]).split(',')
+						d.innerHTML=''
+						for(var midx=0;midx<mac_list.length;midx++){
+							d.innerHTML+=mac_list[midx]
+							if(midx<mac_list.length-1)d.innerHTML+="<br>"
+						}
+						console.log(d.innerHTML)
+					}
+					else if(col_key=='running'){
+						if(rval[mac][col_key]==true)d.style.color="#0F0";
+						else d.style.color="#F00";
+						d.innerHTML=rval[mac][col_key]
+					}
+					else{
+						d.innerHTML=rval[mac][col_key]
+					}
+					c.appendChild(d)
+				}
+			}
+			document.getElementById('attachments_bar').appendChild(t);
+			}catch(e){console.log(e)}
+		}
+	});
 }
 var logoutCB=function(){
 	window.location="/logout";
@@ -38,36 +149,59 @@ var updateSomething=function(what,where){
 	});
 }
 var trackerCB=function(){
-//	$("#tracker").toggleClass('show');
-	window.open("/lanwatch");
+	var url='/lanwatch';
+	html="<iframe src='"+url+"' style='width:100%;border:none;height:100%;'></iframe><button onmousedown='trackerCB()' id='exitB' title='Exit Activity'>Exit</button>";
+	$("#tracker").html(html);
+	$("#tracker").toggleClass('show');
 }
+var studentCB=function(e){
+	print("studentCB: "+e);
+	if(e.length>15)
+		$("#student_dropdown").css('font-size','16px');
+	else
+			$("#student_dropdown").css('font-size','24px');
+
+	$("#student_dropdown").html(e);
+//	$(".dropdown-content").css('display','none');
+//	$(".dropdown-content").hide();
+	load_studentCB();
+}
+
 </script>
 <style>
-body{overflow:hidden;}
-#tracker{
+.info_input{
 	width:100%;
-	height:100%;
-	opacity:0.5;
-	background-color:black;
-	color:white;
-	display:none;
 }
-#tracker.show{
-	display:block;
+table {
+    border-collapse: collapse;
 }
-#mapdiv{background-color: green;}
-#widgetsdiv{background-color: blue;}
 
+.bp {
+    border: 1px solid #444;
+		padding:10px 10px;
+}
+.info_input{
+	width:300px;
+	padding:2px 2px;
+	background:#777;
+	color:#DDD;
+	border:0px;
+	font-size:24px;
+}
+.info_label{
+	border-radius:2px;
+	background:#777;
+	color:#444;
+	border:solid 4px #555;
+	font-weight:bold;
+	padding:2px 2px;
+	font-size:24px;
+}
 </style>
 </head>
 <body style="background-color:#39c968;">
 
-	<div id="tracker" onclick="trackerCB()" style="position:fixed;z-index:20;left:0px;top:0px;">
-		<div class="row" id="row1">
-		<div id="mapdiv" class="column"></div>
-		<div id="widgetsdiv" class="column"></div>
-		</div>
-	</div>
+	<div id="tracker" class="animate" onclick="trackerCB()" style="position:fixed;z-index:20;left:0px;top:0px;"></div>
 
 	<div class="icon-bar" style="position:fixed;z-index:10;left:0px;top:0px;" id="icon_bar">
 		<a class="quarter" onclick="trackerCB()"><i style="font-size:38px;" class="fa">&#xf1b0;</i></a>
@@ -76,6 +210,51 @@ body{overflow:hidden;}
 	</div>
 	<div id="v100" style="height:70px"></div>
 
+	<div class="row" id="row1">
+
+	  <div class="column" id="column1">
+	    <div class="card" id="card1">
+				<div class="container" id="container1">
+
+					<button style="font-size:24px" class="pressbutton" onclick="statusCB()">Status</button>
+
+					<br><br>
+					<div class="attachment-bar" id="attachments_bar"></div>
+
+				</div>
+			</div>
+		</div>
+
+		<div class="column" id="column2">
+	    <div class="card" id="card2">
+				<div class="container" id="container2">
+
+					<button style="font-size:24px" class="pressbutton" onclick="saveStudentCB()">Save</button>
+
+					<div class="dropdown">
+					  <button class="dropbtn pressbutton" id="student_dropdown" style="border-radius:0px;width:320px;"></button>
+					  <div class="dropdown-content" id="student-usernames" style="width:320px;"></div>
+					</div>
+
+					<br><br>
+					<form id="save_student_form" method="POST">
+					{% csrf_token %}
+					<div class="attachment-bar" id="student_attachments_bar">
+						<table align="center">
+						<tr><td class="info_label">Username:</td><td><input class="info_input" id="username" name="username"></input></td></tr>
+						<tr><td class="info_label">Password:</td><td><input class="info_input" type="password" id="password" name="password" value="******"></input></td></tr>
+						<tr><td class="info_label">Is Parent:</td><td><input class="info_input" id="is_parent" name="is_parent"></input></td></tr>
+						<tr><td class="info_label">Credit Balance:</td><td><input class="info_input" id="credit_balance" name="credit_balance"></input></td></tr>
+						<tr><td class="info_label">MAC Addrs:</td><td><input class="info_input" id="mac_addrs" name="mac_addrs"></input></td></tr>
+						<tr><td class="info_label">Remote Username:</td><td><input class="info_input" id="remote_username" name="remote_username"></input></td></tr>
+						<tr><td class="info_label">Remote Password:</td><td><input class="info_input" id="remote_password" name="remote_password"></input></td></tr>
+					</div>
+					</form>
+
+				</div>
+			</div>
+		</div>
+	</div>
 
 
 <div style="display:none">
@@ -86,9 +265,13 @@ body{overflow:hidden;}
 <button style="font-size:24px" onclick="wideClosedCB()">WideClosed</button>
 <br>
 <button style="font-size:24px" onclick="logoutCB()">Logout</button>
-<button style="font-size:24px" onclick="statusCB()">Status</button>
 <div id="status_report_div"></div>
 </div>
+
+<form id="load_student_form" method="POST">
+	{% csrf_token %}
+	<input id="load_student_pyld" type="hidden" name="load_student_pyld"></input>
+</form>
 
 </body>
 </html>
