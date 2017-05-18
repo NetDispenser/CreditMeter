@@ -59,12 +59,18 @@ def getDefaultPolicy():
 		"iptables -A POSTROUTING -t nat -o %s -j MASQUERADE"%(WAN),
 	]
 	whitelist_macs=["B8:E8:56:26:E4:B0",]
-	whitelist_cmds=[]
 	for mac in whitelist_macs:
 		cmds=[
 			"iptables -I FORWARD -i %s -m mac --mac-source %s -j ACCEPT"%(LAN0,mac),
 			"iptables -I FORWARD -i %s -m mac --mac-source %s -j ACCEPT"%(LAN1,mac),
 			"iptables -I FORWARD -i %s -m mac --mac-source %s -j ACCEPT"%(WAN,mac),
+		]
+		common+=cmds
+
+	whitelist_urls=["www.creditfeed.me",]
+	for url in whitelist_urls:
+		cmds=[
+			"iptables -A FORWARD  -p tcp -d %s --dport 80 -j ACCEPT"%(url),
 		]
 		common+=cmds
 

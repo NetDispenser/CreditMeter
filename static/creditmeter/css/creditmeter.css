@@ -92,7 +92,7 @@ i:hover{
   clear: both;
   display: table;
 }
-body{overflow:hidden;background-color:#0069e9;color:white;}
+body{overflow:auto;background-color:#0069e9;color:white;}
 #tracker{
 	width:100%;
 	height:100%;
@@ -100,6 +100,7 @@ body{overflow:hidden;background-color:#0069e9;color:white;}
 	background-color:black;
 	color:white;
 	display:none;
+	overflow:auto;
 }
 #tracker.show{
 	display:block;

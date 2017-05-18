@@ -227,17 +227,18 @@ def status_update(request):
 		rval[key]['device_name']='unk'
 		rval[key]['device_mac']='unk'
 		rval[key]['device_ip']='unk'
-		rval[key]['lease_time']='unk'
+		#rval[key]['lease_time']='unk'
 		rval[key]['mac_addrs']=[]
 		rval[key]['credits']=-999
-		rval[key]['keys']=list(rval[key].keys())
+		#rval[key]['keys']=list(rval[key].keys())
+		rval[key]['keys']=['device_ip','device_mac','mac_addrs','device_name','running','credits','t_elapsed','t_elapsed_total','t_instantiation']
 		try:
 			opt=device_options[key]
 			mylogger.debug("got device_options for %s"%key)
 			rval[key]['device_name']=opt['device_name']
 			rval[key]['device_mac']=opt['device_mac']
 			rval[key]['device_ip']=opt['device_ip']
-			rval[key]['lease_time']=opt['lease_time']
+			#rval[key]['lease_time']=opt['lease_time']
 			parent_username=opt['device_name']+"_PARENT"
 			student_username=opt['device_name']+"_STUDENT"
 			#there will be 2x accounts assoc w/ea mac_addr ... we're taking info for student -> parent
