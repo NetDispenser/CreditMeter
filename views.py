@@ -62,6 +62,8 @@ def verify_accounts(device_name,opt):
 	except:
 		acct=User.objects.create_user(username=student_uname,password='pycon2017')
 		p=acct.userprofile
+		p.remote_username='guest'
+		p.remote_password='pycon2017'
 		p.mac_addrs.append(opt['device_mac'])
 		p.save()
 		mylogger.debug("verify_accounts created "+student_uname)
@@ -72,7 +74,6 @@ def verify_accounts(device_name,opt):
 	except:
 		acct=User.objects.create_user(username=parent_uname,password='pycon2017')
 		acct.userprofile.is_parent=True
-		acct.userprofile.students.append(student_uname)
 		acct.userprofile.save()
 		acct.save()
 		mylogger.debug("verify_accounts created "+parent_uname)
