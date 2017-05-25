@@ -5,10 +5,13 @@ CREDITMETERD_PORT=8210
 CREDIT_FEEDER_URL="http://www.creditfeed.me/"
 CREDITMETER_PID='/var/run/creditmeter.pid'
 CREDITMETER_HOSTNAME="192.168.22.1"
+#CREDITMETER_HOSTNAME="meter.creditfeed.me"
 
 LAN0="eth0"
 LAN1="wlan1"
 WAN="wlan0"
+
+DEMO=False
 
 def mktstamp():
 	tstamp="%s"%datetime.datetime.now()

@@ -16,7 +16,7 @@ class CreditMeterDaemon(Daemon):
 		self.clients={}
 		self.t=None
 		#self.wide_closed()
-		self.write_default_policy()
+		if not DEMO:self.write_default_policy()
 
 	def json_status_report(self):#to query from python shell
 		return self.clients
@@ -39,19 +39,20 @@ class CreditMeterDaemon(Daemon):
 							]
 							for cidx in range(len(cmds)):
 								logging.debug(cmds[cidx])
-								os.system(cmds[cidx])
+								if not DEMO:os.system(cmds[cidx])
 				time.sleep(1)
 			except:
 				logging.exception("firewall checker exception")
 				time.sleep(1)
 
 	def write_default_policy(self):
+		if DEMO:return
 		logging.debug("write_policy")
 		try:
 			cmds=getDefaultPolicy()
 			for cidx in range(len(cmds)):
 				logging.debug(cmds[cidx])
-				os.system(cmds[cidx])
+				if not DEMO:os.system(cmds[cidx])
 		except:
 			logging.exception("exception updating iptables")
 		return 0
@@ -79,7 +80,7 @@ class CreditMeterDaemon(Daemon):
 			]
 			for cidx in range(len(cmds)):
 				logging.debug(cmds[cidx])
-				os.system(cmds[cidx])
+				if not DEMO:os.system(cmds[cidx])
 
 		dt=int(t_now-self.clients[mac]['t_last'])
 		self.clients[mac]['t_elapsed']+=dt
@@ -101,7 +102,7 @@ class CreditMeterDaemon(Daemon):
 		cmds=getWideOpenPolicy()
 		for cidx in range(len(cmds)):
 			logging.debug(cmds[cidx])
-			os.system(cmds[cidx])
+			if not DEMO:os.system(cmds[cidx])
 		return self.json_status_report()
 
 	def keepalive(self,*args):
