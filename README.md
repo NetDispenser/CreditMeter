@@ -1,18 +1,17 @@
-# CreditMeter
-#Raspberry-Pi 3 Debian Files for CreditMeter
+# Raspberry-Pi 3 Debian Files for CreditMeter
 
 This repository contains various configuration files and other source code used
 to build the Raspberry-Pi 3 CreditMeter device.
 
-##Getting Started
+## Getting Started
 
-###Installation of base Debian 7 (Jessie) system
+### Installation of base Debian 7 (Jessie) system
 Download the official Raspbian Jessie Lite (February 2017) from the
 [raspberrypi.org website] (https://www.raspberrypi.org/downloads/raspbian/).  
 The Lite version does not have a Desktop or X-Windows system.
 Use at least an 8G micro SD card to install the image.  
 
-##Web Server(s)
+## Web Server(s)
 Install nginx as the default system web server. We will also configure uwsgi
 as the communication layer between nginx and Django, the Python web framework.
 ```
@@ -32,7 +31,7 @@ Executing /usr/sbin/update-rc.d nginx enable
 Verify that the default nginx page is working on port 80.
 
 
-###CreditMeter Interface
+### CreditMeter Interface
 The CreditMeter interface is installed inside a python (3.5) virtualenv at /var/www/meter
 as follows:
 ```
@@ -48,7 +47,7 @@ chmod +x ./manage.py
 ```
 
 
-###Configuring nginx, uwsgi and django
+### Configuring nginx, uwsgi and django
 
 Here are the two resources used to configure uwsgi and django:
 * [How to use Django with uWSGI](https://docs.djangoproject.com/en/1.10/howto/deployment/wsgi/uwsgi/)
@@ -84,7 +83,7 @@ whenever the creditmeter's views.py file is modified or touched, which is import
 during development.  
 
 
-###Design of the website
+### Design of the website
 
 The default Django webpage should be viewable at http://192.168.22.1.  
 The website is a standard Django website in which requests are routed according
@@ -131,7 +130,7 @@ managed like so:
 systemctl enable (disable) rc.local
 ```
 
-###settings.py and urls.py
+### settings.py and urls.py
 
 In settings.py you should edit ALLOWED_HOSTS, INSTALLED_APPLICATIONS and
 STATIC_ROOT.  The rest should be covered by defaults.  
@@ -162,7 +161,7 @@ urlpatterns = [
 ]
 ```
 
-###Database
+### Database
 
 The CreditMeter website adds a userprofile to the default Django user model:
 ```
@@ -193,7 +192,7 @@ chmod +x ./manage.py
 The above will initialize the database and create a table for the userprofile model.
 
 
-###Static files
+### Static files
 
 Django has a convention for managing static files.  Once the static file
 pointers and locations have been created and specified (above) you need to
