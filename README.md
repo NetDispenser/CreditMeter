@@ -11,6 +11,133 @@ Download the official Raspbian Jessie Lite (February 2017) from the
 The Lite version does not have a Desktop or X-Windows system.
 Use at least an 8G micro SD card to install the image.  
 
+## WiFi Setup: wlan0 dhclient
+Edit /etc/wpa_supplicant/wpa_supplicant.conf
+At the end, add the section:
+network={
+	ssid="<your ssid in quotes>"
+	scan_ssid=1
+	key_mgmt=WPA-PSK
+	psk="<your password in quotes>"
+}
+
+Reboot and verify that you have an IP address using ifconfig and iwconfig.
+The default install runs dhcpcd automatically if your wpa_supplicant.conf if ok.
+You should be able to ping something familiar, like cnn.com.  If you see cnn's
+IP address then your DNS is working.  If not, check your /etc/resolv.conf.
+When you have internet access via wlan0 then issue "apt-get update".
+
+
+## WiFi Setup: wlan1 hostapd
+I'm using an Edimax USB nano WiFi adapter running in Master mode, as set by
+hostapd (access  point daemon).  The hostapd part allows you to connect to the
+Raspberry-Pi3 via WiFi.  The dnsmasq part takes care of giving you an IP address
+and managing your DNS needs.
+
+Install hostapd and dnsmasq:
+apt-get install hostapd dnsmasq
+
+Edit /etc/hostapd/hostapd.conf
+
+	interface=wlan1
+	ssid=rpi3
+	hw_mode=g
+	channel=3
+	wpa=2
+	wpa_key_mgmt=WPA-PSK
+	wpa_passphrase=raspberry
+
+Edit /etc/network/interfaces
+
+	iface wlan1 inet static
+		address 192.168.22.1
+		netmask 255.255.255.0
+		network 192.168.22.0
+		broadcast 192.168.22.255
+
+
+Edit /etc/dnsmasq.conf (line 157)
+
+	dhcp-range=192.168.1.50,192.168.1.150,12h
+
+
+systemctl enable dnsmasq
+
+Edit /etc/defaults/hostapd
+
+	DAEMON_CONF="/etc/hostapd/hostapd.conf"
+
+Issue:
+	systemctl enable ssh
+	service sshd start
+
+Reboot, connect to rpi3 and ssh into your Raspberry-Pi.
+
+##Router configuration (wide-open)
+At this point your Raspberry-Pi isn't forwarding your traffic through to the
+internet.  For this you need to configure IPTables.  Here is a python script
+to make it easier (see /creditmeter/daemons/utils.py):
+
+"""
+#!/usr/bin/env python
+import os
+
+LAN0="eth0"
+LAN1="wlan1"
+WAN="wlan0"
+
+def getWideOpenPolicy():
+	wide_open=[
+		iptables -F
+		iptables -t nat -F
+		iptables -P INPUT ACCEPT
+		iptables -P OUTPUT ACCEPT
+		iptables -P FORWARD ACCEPT
+		iptables -I INPUT 1 -i ${LAN0} -j ACCEPT
+		iptables -I INPUT 1 -i ${LAN1} -j ACCEPT
+		iptables -I INPUT 1 -i lo -j ACCEPT
+		iptables -A INPUT -p UDP --dport bootps ! -i ${LAN0} -j REJECT
+		iptables -A INPUT -p UDP --dport bootps ! -i ${LAN1} -j REJECT
+		iptables -A INPUT -p UDP --dport domain ! -i ${LAN0} -j REJECT
+		iptables -A INPUT -p UDP --dport domain ! -i ${LAN1} -j REJECT
+		iptables -A INPUT -p TCP --dport ssh -i ${WAN} -j ACCEPT
+		iptables -I FORWARD -i ${LAN0} -d 192.168.0.0/255.255.0.0 -j ACCEPT
+		iptables -I FORWARD -i ${LAN1} -d 192.168.0.0/255.255.0.0 -j ACCEPT
+		iptables -A FORWARD -i ${LAN0} -s 192.168.0.0/255.255.0.0 -j ACCEPT
+		iptables -A FORWARD -i ${LAN1} -s 192.168.0.0/255.255.0.0 -j ACCEPT
+		iptables -A FORWARD -i ${WAN} -d 192.168.0.0/255.255.0.0 -j ACCEPT
+		iptables -t nat -A POSTROUTING -o ${WAN} -j MASQUERADE
+		iptables-save
+		#REFERENCE: http://wiki/gentoo.org/wiki/Home_Router
+	]
+	return wide_open
+
+cmds=getWideOpenPolicy()
+for cidx in range(len(cmds)):
+	cmd=cmds[cidx]
+	os.system(cmd)
+"""
+
+After this issue iptables-save and you should have internet access via your
+Raspberry-Pi's WiFi access poing.
+
+
+## Other nice things to have
+Arguably the most useful Linux command: locate
+
+	apt-get install mlocate
+	updatedb
+
+	usage: locate <anything>
+	example: locate hostapd.conf
+
+	apt-get install links (curses-based browser)
+
+You will soon need git to clone the creditmeter repository:
+
+	apt-get install git
+
+
 ## Web Server(s)
 Install nginx as the default system web server. We will also configure uwsgi
 as the communication layer between nginx and Django, the Python web framework.
@@ -115,7 +242,7 @@ creditmeter/
 +-- views.py
 ```
 
-The Django backend cannot issue the system-wide configuration commands such 
+The Django backend cannot issue the system-wide configuration commands such
 as the iptables commands necessary to control the firewall.
 For this we use a daemon and send commands to it using RPC (Remote Procedure
 Calls) on port 8007 (arbitrary and hard-coded at the moment).  
@@ -139,7 +266,7 @@ INSTALLED_APPS = [
     ...
     'creditmeter',
 ]
-ALLOWED_HOSTS = [192.168.22.1,]
+ALLOWED_HOSTS = [192.168.1.1,]
 STATIC_URL = '/static/'
 STATIC_ROOT = '/var/www/meter/static/'
 ```

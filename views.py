@@ -91,7 +91,9 @@ def home(request):
 	IP=request.META.get('HTTP_X_FORWARDED_FOR') or request.META.get('REMOTE_ADDR')
 	mylogger.debug("not authenticated: %s"%(IP))
 	device_options=mkDeviceOptions('device_ip')
-	opt=device_options[IP]
+
+	if DEMO:opt=device_options[device_options['keys'][0]]
+	else:opt=device_options[IP]
 
 	if request.method == 'POST':
 		mylogger.debug("getting login_pyld from post ...")
