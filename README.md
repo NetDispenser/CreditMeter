@@ -14,12 +14,14 @@ Use at least an 8G micro SD card to install the image.
 ## WiFi Setup: wlan0 dhclient
 Edit /etc/wpa_supplicant/wpa_supplicant.conf
 At the end, add the section:
+```
 network={
 	ssid="<your ssid in quotes>"
 	scan_ssid=1
 	key_mgmt=WPA-PSK
 	psk="<your password in quotes>"
 }
+```
 
 Reboot and verify that you have an IP address using ifconfig and iwconfig.
 The default install runs dhcpcd automatically if your wpa_supplicant.conf if ok.
@@ -35,10 +37,12 @@ Raspberry-Pi3 via WiFi.  The dnsmasq part takes care of giving you an IP address
 and managing your DNS needs.
 
 Install hostapd and dnsmasq:
-apt-get install hostapd dnsmasq
+```
+	apt-get install hostapd dnsmasq
+```
 
 Edit /etc/hostapd/hostapd.conf
-
+```
 	interface=wlan1
 	ssid=rpi3
 	hw_mode=g
@@ -46,31 +50,34 @@ Edit /etc/hostapd/hostapd.conf
 	wpa=2
 	wpa_key_mgmt=WPA-PSK
 	wpa_passphrase=raspberry
+```
 
 Edit /etc/network/interfaces
-
+```
 	iface wlan1 inet static
 		address 192.168.22.1
 		netmask 255.255.255.0
 		network 192.168.22.0
 		broadcast 192.168.22.255
-
+```
 
 Edit /etc/dnsmasq.conf (line 157)
-
+```
 	dhcp-range=192.168.1.50,192.168.1.150,12h
-
+```
 
 systemctl enable dnsmasq
 
 Edit /etc/defaults/hostapd
-
+```
 	DAEMON_CONF="/etc/hostapd/hostapd.conf"
+```
 
 Issue:
+```
 	systemctl enable ssh
 	service sshd start
-
+```
 Reboot, connect to rpi3 and ssh into your Raspberry-Pi.
 
 ##Router configuration (wide-open)
@@ -78,7 +85,7 @@ At this point your Raspberry-Pi isn't forwarding your traffic through to the
 internet.  For this you need to configure IPTables.  Here is a python script
 to make it easier (see /creditmeter/daemons/utils.py):
 
-"""
+```
 #!/usr/bin/env python
 import os
 
@@ -116,7 +123,7 @@ cmds=getWideOpenPolicy()
 for cidx in range(len(cmds)):
 	cmd=cmds[cidx]
 	os.system(cmd)
-"""
+```
 
 After this issue iptables-save and you should have internet access via your
 Raspberry-Pi's WiFi access poing.
@@ -124,7 +131,7 @@ Raspberry-Pi's WiFi access poing.
 
 ## Other nice things to have
 Arguably the most useful Linux command: locate
-
+```
 	apt-get install mlocate
 	updatedb
 
@@ -132,11 +139,12 @@ Arguably the most useful Linux command: locate
 	example: locate hostapd.conf
 
 	apt-get install links (curses-based browser)
+```
 
 You will soon need git to clone the creditmeter repository:
-
+```
 	apt-get install git
-
+```
 
 ## Web Server(s)
 Install nginx as the default system web server. We will also configure uwsgi
