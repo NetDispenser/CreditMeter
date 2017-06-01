@@ -172,7 +172,7 @@ specifies wlan1 because that's the interface with this IP, as per what we set in
 	listen 192.168.1.1:80 default_server;
 ```
 
-Verify that the default nginx page is working at 192.168.22.1:80.
+Verify that the default nginx page is working at 192.168.1.1:80.
 
 
 ### CreditMeter Interface
@@ -248,11 +248,54 @@ The above command uses the --touch-reload flag, which tells uwsgi to reload
 whenever the creditmeter's views.py file is modified or touched, which is important
 during development.  
 
+### Installing LAN-Watch
 
+LAN-Watch is a separate repository
+```
+apt-get install tcpdump
+cd /var/www/meter
+git clone https://github.com/netdispenser/xtcpd.git .
+mkdir /var/log/xtcpd
+touch /var/log/xtcpd.log
+chown -R www-data /var/log/xtcpd
+```
+
+There are 3 daemons (background Python processes) which need to be running, and
+those are located in ./xtcpd/daemons.  They are trafd, spectrad, clientsd.  These
+are automatically started by /etc/rc.local, but you will need to un-comment the
+commands as they have been commented as we were note ready for them yet.
+/etc/rc.local should look like this now:
+```
+_IP=$(hostname -I) || true
+if [ "$_IP" ]; then
+  printf "My IP address is %s\n" "$_IP"
+
+  /var/www/meter/bin/python3 /var/www/meter/xtcpd/daemons/trafd start
+  /var/www/meter/bin/python3 /var/www/meter/xtcpd/daemons/clientsd start
+  /var/www/meter/bin/python3 /var/www/meter/xtcpd/daemons/spectrad start
+  /var/www/meter/bin/python3 /var/www/meter/creditmeter/daemons/creditmeterd start
+  /var/www/meter/bin/uwsgi --emperor /etc/uwsgi/vassals --uid www-data --gid www-data --touch-reload /var/www/meter/creditmeter/views.py --daemonize /var/log/uwsgi-emperor.log
+fi
+```
+
+Finally, you need to collect the static files as per standard procedure in Django.
+Make sure you are in your virtualenv!  
+```
+cd /var/www/meter
+source ./bin/activate
+./manage.py collectstatic
+```
+
+The LAN-Watch webapp will be visible by logging-in as Parent@CreditMeter and pushing
+the paw icon ("tracker", i.e. traffic tracker).  It should show a full-page modal overlay
+with the LAN-Watch app running inside.  Remember your logfile at:
+```
+/var/log/xtcpd/xtcpd.log
+```
 
 ### Design of the website
 
-The default Django webpage should be viewable at http://192.168.22.1.  
+The default Django webpage should be viewable at http://192.168.1.1.  
 The website is a standard Django website in which requests are routed according
 to the urls.py file, which sends each request to the appropriate handler of a
 views.py file. Here is the essential file structure from the repository:
@@ -289,13 +332,9 @@ Calls) on port 8007 (arbitrary and hard-coded at the moment).
 
 The daemon is located in /var/www/meter/creditmeter/daemon/creditmeterd and derives from the
 daemon.py in the same directory.  The daemon is started by /etc/rc.local, the
-same place that we started the uwsgi daemon.  
+same place that we started the uwsgi daemon.  You can just use the rc.local file
+included in the ./etc of this repository.
 
-The running of /etc/rc.local during startup is actually a service which is
-managed like so:
-```
-systemctl enable (disable) rc.local
-```
 
 ### settings.py and urls.py
 
@@ -306,7 +345,7 @@ INSTALLED_APPS = [
     ...
     'creditmeter',
 ]
-ALLOWED_HOSTS = [192.168.1.1,]
+ALLOWED_HOSTS = ['192.168.1.1',]
 STATIC_URL = '/static/'
 STATIC_ROOT = '/var/www/meter/static/'
 ```
