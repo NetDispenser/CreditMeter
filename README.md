@@ -10,6 +10,10 @@ Download the official Raspbian Jessie Lite (February 2017) from the
 [raspberrypi.org website] (https://www.raspberrypi.org/downloads/raspbian/).  
 The Lite version does not have a Desktop or X-Windows system.
 Use at least an 8G micro SD card to install the image.  
+After the initial install update your package list:
+```
+	apt-get update
+```
 
 ## WiFi Setup: wlan0 dhclient
 Edit /etc/wpa_supplicant/wpa_supplicant.conf
@@ -55,10 +59,10 @@ Edit /etc/hostapd/hostapd.conf
 Edit /etc/network/interfaces
 ```
 	iface wlan1 inet static
-		address 192.168.22.1
+		address 192.168.1.1
 		netmask 255.255.255.0
-		network 192.168.22.0
-		broadcast 192.168.22.255
+		network 192.168.1.0
+		broadcast 192.168.1.255
 ```
 
 Edit /etc/dnsmasq.conf (line 157)
@@ -73,7 +77,7 @@ Edit /etc/defaults/hostapd
 	DAEMON_CONF="/etc/hostapd/hostapd.conf"
 ```
 
-Issue:
+Issue the following commands:
 ```
 	systemctl enable ssh
 	service sshd start
@@ -126,7 +130,7 @@ for cidx in range(len(cmds)):
 ```
 
 After this issue iptables-save and you should have internet access via your
-Raspberry-Pi's WiFi access poing.
+Raspberry-Pi's WiFi access point.
 
 
 ## Other nice things to have
@@ -153,7 +157,6 @@ as the communication layer between nginx and Django, the Python web framework.
 apt-get install nginx uwsgi
 ```
 
-
 We tell the system to start nginx at boot:
 ```
 root@raspberrypi:/var/www# systemctl enable nginx
@@ -162,20 +165,32 @@ Executing /usr/sbin/update-rc.d nginx defaults
 Executing /usr/sbin/update-rc.d nginx enable
 ```
 
+Now you've got to edit /etc/nginx/sites-enabled/default; this implicitely
+specifies wlan1 because that's the interface with this IP, as per what we set in
+/etc/network/interfaces.
+```
+	listen 192.168.1.1:80 default_server;
+```
 
-Verify that the default nginx page is working on port 80.
+Verify that the default nginx page is working at 192.168.22.1:80.
 
 
 ### CreditMeter Interface
+
 The CreditMeter interface is installed inside a python (3.5) virtualenv at /var/www/meter
 as follows:
 ```
-apt-get install python3-virtualenv
+apt-get install python-cxx-dev
+apt-get install sqlite3
+apt-get install virtualenv python3-virtualenv
 cd /var/www
-virtualenv meter
+virtualenv -p /usr/bin/python3 meter
 cd meter
 source bin/activate
-pip2 install django
+apt-get install python3-cxx-dev
+apt-get install libpcre3 libpcre3-dev
+pip install uwsgi
+pip3 install django django-picklefield
 django-admin startproject meter .
 chmod +x ./manage.py
 ./manage.py startapp creditmeter
@@ -188,18 +203,35 @@ Here are the two resources used to configure uwsgi and django:
 * [How to use Django with uWSGI](https://docs.djangoproject.com/en/1.10/howto/deployment/wsgi/uwsgi/)
 * [Setting up Django and your web server with uWSGI and nginx](http://uwsgi-docs.readthedocs.io/en/latest/tutorials/Django_and_nginx.html)
 
-
-Here are the important configuration files from this repository:
+There are three important configuration files located in the root directory
+of the repository:
 * /etc/nginx/sites-available/ndjinx_nginx.conf
 * /var/www/ev/uwsgi_params
 * /var/www/ev/nginx_uwsgi.ini
 
 
-The last file, nginx_uwsgi.ini, refers to a socket at /var/www/ev/ndjinx.sock
-which should be created manually with permissions 666.
+The last file, nginx_uwsgi.ini, refers to a socket at /var/www/meter/ndjinx.sock
+which gets created by the nginx_uwsgi.ini file.  It should look like this after
+being created by the script and uwsgi is running:
 ```
 root@raspberrypi:/var/www# ls -l /var/www/ev/ndjinx.sock
 srw-rw-rw- 1 www-data www-data 0 Mar  2 13:17 /var/www/ev/ndjinx.sock
+```
+
+We need to set two dynamic links as follows:
+```
+cd /etc/nginx/sites-enabled
+ln -s /var/www/meter/ndjinx_nginx.conf meter
+
+cd /etc/uwsgi
+mkdir vassals;cd vassals
+ln -s /var/www/meter/ndjinx_uwsgi.ini ndjinx_uwsgi.ini
+```
+
+Then move the ./etc/rc.local to /etc:
+```
+mv ./etc/rc.local /etc
+systemctl enable rc.local
 ```
 
 
@@ -212,10 +244,10 @@ edit /etc/rc.local, rather than copying-in, then this is important to know!
 /usr/local/bin/uwsgi --emperor /etc/uwsgi/vassals --uid www-data --gid www-data --touch-reload /var/www/meter/creditmeter/views.py --daemonize /var/log/uwsgi-emperor.log
 ```
 
-
 The above command uses the --touch-reload flag, which tells uwsgi to reload
 whenever the creditmeter's views.py file is modified or touched, which is important
 during development.  
+
 
 
 ### Design of the website

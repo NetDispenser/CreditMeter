@@ -1,0 +1,24 @@
+#!/bin/bash
+#
+# rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will "exit 0" on success or any other
+# value on error.
+#
+# In order to enable or disable this script just change the execution
+# bits.
+#
+# By default this script does nothing.
+
+# Print the IP address
+_IP=$(hostname -I) || true
+if [ "$_IP" ]; then
+  printf "My IP address is %s\n" "$_IP"
+  
+  /var/www/meter/bin/python3  /var/www/meter/creditmeter/daemons/creditmeterd start
+  /var/www/meter/bin/uwsgi --emperor /etc/uwsgi/vassals --uid www-data --gid www-data --touch-reload /var/www/meter/creditmeter/views.py --daemonize /var/log/uwsgi-emperor.log
+fi
+
+
+exit 0
