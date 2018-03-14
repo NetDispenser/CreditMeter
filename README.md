@@ -4,6 +4,8 @@ This repository contains various configuration files and other source code used
 to build the Raspberry-Pi 3 CreditMeter device.
 
 ## Getting Started
+The easiest way to setup a CreditMeter is to obtain either an SD card image or
+an actual pre-installed SD card through the group discussion page.
 
 ### Installation of base Debian 7 (Jessie) system
 Download the official Raspbian Jessie Lite (February 2017) from the
