@@ -4,7 +4,7 @@ CREDITMETER_LOG_FULL_PATH='/var/www/meter/creditmeter/meter.log'
 CREDITMETERD_PORT=8210
 CREDIT_FEEDER_URL="http://www.creditfeed.me/"
 CREDITMETER_PID='/var/run/creditmeter.pid'
-CREDITMETER_HOSTNAME="192.168.22.1"
+CREDITMETER_HOSTNAME="192.168.1.1"
 #CREDITMETER_HOSTNAME="meter.creditfeed.me"
 
 LAN0="eth0"
