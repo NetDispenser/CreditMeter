@@ -1,21 +1,10 @@
 <html>
 <head>
-<title>{{title}}</title>
-<link rel="shortcut icon" href="/static/creditmeter/images/anim.png">
-<link rel="stylesheet" href="/static/creditmeter/css/font-awesome.min.css">
-<link rel="stylesheet" href="/static/creditmeter/css/device-login.css">
-<script src="/static/creditmeter/js/jquery.min.js"></script>
-
-<script>
-$(document).ready(function(){
-	$("#device_div").html("<b>Device Name: </b>{{device_name}}");
-	var child_pyld={"account_type":"child","device_name":"{{device_name}}","device_ip":"{{device_ip}}","device_mac":"{{device_mac}}"};
-	$("#child_pyld").val(JSON.stringify(child_pyld));//prepares for submit
-	var parent_pyld={"account_type":"parent","device_name":"{{device_name}}","device_ip":"{{device_ip}}","device_mac":"{{device_mac}}"};
-	$("#parent_pyld").val(JSON.stringify(parent_pyld));//prepares for submit
-//	$("#lhs").html(window.innerWidth+" x "+window.innerHeight);
-});
-</script>
+	<title>{{title}}</title>
+	<link rel="shortcut icon" href="/static/creditmeter/images/anim.png">
+	<link rel="stylesheet" href="/static/creditmeter/css/font-awesome.min.css">
+	<link rel="stylesheet" href="/static/creditmeter/css/device-login.css">
+	<script src="/static/creditmeter/lib/d3.v4.min.js"></script>
 </head>
 
 <body>
@@ -47,6 +36,17 @@ $(document).ready(function(){
 </div>
 
 <div class="sitelabel">Credit Meter Login</div>
+
+<script>
+//$(document).ready(function(){
+	d3.select("#device_div").html("<b>Device Name: </b>{{device_name}}");
+	var child_pyld={"account_type":"child","device_name":"{{device_name}}","device_ip":"{{device_ip}}","device_mac":"{{device_mac}}"};
+	d3.select("#child_pyld").attr("value",JSON.stringify(child_pyld));//prepares for submit
+	var parent_pyld={"account_type":"parent","device_name":"{{device_name}}","device_ip":"{{device_ip}}","device_mac":"{{device_mac}}"};
+	d3.select("#parent_pyld").attr("value",JSON.stringify(parent_pyld));//prepares for submit
+//	$("#lhs").html(window.innerWidth+" x "+window.innerHeight);
+//});
+</script>
 
 </body>
 </html>
