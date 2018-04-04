@@ -11,7 +11,9 @@
 <div id="modal" class="modal">
 	<div class="row">
 	<div class="container">
-		<div id="lhs" class="column">
+
+		<div id="lhs1" class="column">
+			<div class="sitelabel">Child@Credit-Feeder Login</div>
 			<div class="imgcontainer">
 	      <img src="static/creditmeter/images/img_avatar.png" alt="Avatar" class="avatar">
 				<form class="animate" action="/" method="POST">
@@ -21,7 +23,8 @@
 				</form>
 	    </div>
 		</div>
-		<div id="rhs" class="column">
+		<div id="rhs1" class="column">
+			<div class="sitelabel">Parent@Credit-Feeder Login</div>
 			<div class="imgcontainer">
 	      <img src="static/creditmeter/images/img_avatar2.png" alt="Avatar" class="avatar">
 				<form class="animate" action="/" method="POST">
@@ -31,11 +34,37 @@
 				</form>
 	    </div>
 		</div>
+
+		<div id="lhs2" class="column">
+				<div class="sitelabel">Child@Credit-Meter Login</div>
+				<div class="imgcontainer">
+	      <img src="static/creditmeter/images/img_avatar.png" alt="Avatar" class="avatar">
+				<form class="animate" action="/" method="POST">
+					{% csrf_token %}
+					<button type="submit" class="pressbutton">Child <i class="fa">&#xf090;</i></button>
+					<input type="hidden" id="child_pyld" name="login_pyld" value=""></input>
+				</form>
+	    </div>
+		</div>
+		<div id="rhs2" class="column">
+			<div class="sitelabel">Parent@Credit-Meter Login</div>
+			<div class="imgcontainer">
+	      <img src="static/creditmeter/images/img_avatar2.png" alt="Avatar" class="avatar">
+				<form class="animate" action="/" method="POST">
+					{% csrf_token %}
+					<button type="submit" class="pressbutton">Parent <i class="fa">&#xf090;</i></button>
+					<input type="hidden" id="parent_pyld" name="login_pyld" value=""></input>
+				</form>
+	    </div>
+		</div>
+
 	</div>
 	</div>
 </div>
 
-<div class="sitelabel">Credit Meter Login</div>
+
+
+
 
 <script>
 //$(document).ready(function(){
