@@ -15,23 +15,16 @@
 		<div id="lhs1" class="column">
 			<div class="sitelabel">Child@Credit-Feeder Login</div>
 			<div class="imgcontainer">
-	      <img src="static/creditmeter/images/img_avatar.png" alt="Avatar" class="avatar">
-				<form class="animate" action="/" method="POST">
-					{% csrf_token %}
-					<button class="pressbutton">Child <i class="fa">&#xf090;</i></button>
-					<input type="hidden" id="child_pyld" name="login_pyld" value=""></input>
+	      <img src="static/creditmeter/images/img_avatar.png" alt="Avatar" class="avatar"><br>
+					<button id="remote_child" class="pressbutton">Child <i class="fa">&#xf090;</i></button>
 				</form>
 	    </div>
 		</div>
 		<div id="rhs1" class="column">
 			<div class="sitelabel">Parent@Credit-Feeder Login</div>
 			<div class="imgcontainer">
-	      <img src="static/creditmeter/images/img_avatar2.png" alt="Avatar" class="avatar">
-				<form class="animate" action="/" method="POST">
-					{% csrf_token %}
-					<button class="pressbutton">Parent <i class="fa">&#xf090;</i></button>
-					<input type="hidden" id="parent_pyld" name="login_pyld" value=""></input>
-				</form>
+	      <img src="static/creditmeter/images/img_avatar2.png" alt="Avatar" class="avatar"><br>
+					<button id="remote_parent" class="pressbutton">Parent <i class="fa">&#xf090;</i></button>
 	    </div>
 		</div>
 
@@ -67,6 +60,14 @@
 
 
 <script>
+	d3.select("#remote_child").on("click",function(){
+		var url="http://www.creditfeed.me";
+		window.open(url);
+	})
+	d3.select("#remote_parent").on("click",function(){
+		var url="http://www.creditfeed.me";
+		window.open(url);
+	})
 //$(document).ready(function(){
 	d3.select("#device_div").html("<b>Device Name: </b>{{device_name}}");
 	var child_pyld={"account_type":"child","device_name":"{{device_name}}","device_ip":"{{device_ip}}","device_mac":"{{device_mac}}"};
